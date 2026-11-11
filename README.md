@@ -36,7 +36,7 @@ cp .env.example .env          # Windows: copy .env.example .env
 #    http://localhost/phpmyadmin → pestaña "Importar" (sin elegir base a la izquierda)
 #    → archivo database/schema.sql → "Importar"
 
-# 4. Datos de prueba (cuando Dev A termine seed.js)
+# 4. Datos de prueba (usuarios e inmuebles; ver "Usuarios de prueba")
 npm run seed
 
 # 5. Levantar el servidor
@@ -101,25 +101,27 @@ inmo-predict/
 ## Flujo de Git
 
 ```text
-main      ← solo entregas (v0.9.0 día 4, v1.0.0 día 6)
-develop   ← integración diaria
-feature/back-auth, feature/ml-modelo-v1, feature/front-catalogo, fix/…, contrato/…
+main        ← solo entregas (v0.9.0 día 4, v1.0.0 día 6); solo Dev A pasa developer → main
+developer   ← integración diaria (rama por defecto)
+developF    ← Dev A · Backend y BD
+developM    ← Dev B · Machine Learning
+developR    ← Dev C · Frontend y UX
 ```
 
-1. Al empezar el día: checkout `develop` → Pull.
-2. Rama nueva desde `develop`, una por issue.
-3. Commits pequeños: `feat(auth): agrega registro con DNI`, `fix(catalogo): corrige filtro de precio`.
-4. Antes del PR: Pull de `develop` y merge de `develop` en tu rama; resolver conflictos y probar.
-5. PR hacia `develop` con `Closes #<issue>`; lo revisa otro integrante.
-6. Merge con **Create a merge commit** (no squash) y borrar la rama.
+1. **Al empezar el día:** checkout `developer` → Pull; checkout de tu rama → clic derecho sobre `developer` → *Merge developer into …* → Push.
+2. **Durante el día:** commits pequeños en tu rama: `feat(auth): agrega registro con DNI`, `fix(catalogo): corrige filtro de precio`.
+3. **Al final del día:** Push y Pull Request de tu rama → `developer`, con `Closes #<issue>`; lo revisa otro integrante.
+4. Merge con **Create a merge commit** (no squash), para que cada commit conserve a su autor.
 
-Nunca: commit directo a `main`/`develop`, force push en ramas compartidas, subir `.env`, `node_modules/` o `uploads/`.
+Nunca: commit directo a `main`/`developer`, force push en ramas compartidas, subir `.env`, `node_modules/` o `uploads/`.
 
 ## Usuarios de prueba
 
-_(Dev A los completa cuando termine `seed.js`; solo contraseñas de prueba.)_
+Se crean con `npm run seed` (borra y recarga los datos de prueba). Son solo para desarrollo: el repo es público.
 
-| Rol | DNI | Contraseña |
-| --- | --- | --- |
-| admin | | |
-| propietario | | |
+| Rol | DNI | Contraseña | Nombre |
+| --- | --- | --- | --- |
+| admin | 00000001 | Admin1234 | Admin InmoPredict |
+| propietario | 11111111 | Prueba123 | Ana Torres Vega |
+| propietario | 22222222 | Prueba123 | Luis Ramírez Soto |
+| propietario | 33333333 | Prueba123 | María Quispe Rojas |
