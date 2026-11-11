@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Dueño: Dev C -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi panel · InmoPredict</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231d3557' d='M8 1 1 7h2v8h4v-5h2v5h4V7h2z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <header id="navbar"></header>
+  <main class="container py-4">
+    <h1 class="h3 ip-titulo-pagina mb-3">Mi panel</h1>
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inmuebles" type="button" role="tab">Mis inmuebles</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-consultas" type="button" role="tab">Mis consultas</button>
+      </li>
+    </ul>
+    <div class="tab-content ip-panel border-top-0 rounded-top-0">
+      <div class="tab-pane fade show active" id="tab-inmuebles" role="tabpanel">
+        <div id="lista-mis-inmuebles" class="row g-4"></div>
+      </div>
+      <div class="tab-pane fade" id="tab-consultas" role="tabpanel">
+        <div id="tabla-mis-consultas"></div>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="/js/paginas/panel.js"></script>
+</body>
+</html>

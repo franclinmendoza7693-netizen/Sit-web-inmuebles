@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- Dueño: Dev C (maqueta) + Dev B (lógica). IDs y names acordados en la sección 7.1 del plan: no cambiarlos sin avisar. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estimar precio · InmoPredict</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231d3557' d='M8 1 1 7h2v8h4v-5h2v5h4V7h2z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <header id="navbar"></header>
+  <main class="container py-4">
+    <h1 class="h3 ip-titulo-pagina mb-3">¿Cuánto vale tu inmueble?</h1>
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <form id="form-prediccion" class="ip-panel" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="pred-superficie">Superficie (m²)</label>
+            <input class="form-control" id="pred-superficie" name="superficie_m2" type="number" min="20" max="1000" step="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="pred-habitaciones">Número de habitaciones</label>
+            <input class="form-control" id="pred-habitaciones" name="num_habitaciones" type="number" min="1" max="10" step="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="pred-zona">Ubicación (zona)</label>
+            <select class="form-select" id="pred-zona" name="zona" required>
+              <option value="">Elige una zona</option>
+              <option value="centro">Centro</option>
+              <option value="suburbio">Suburbio</option>
+              <option value="rural">Rural</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="pred-anio">Año de construcción</label>
+            <input class="form-control" id="pred-anio" name="anio_construccion" type="number" min="1950" step="1" required>
+          </div>
+          <button class="btn btn-ip w-100" id="btn-predecir" type="submit"><i class="bi bi-cpu"></i> Estimar precio</button>
+        </form>
+      </div>
+
+      <div class="col-lg-7">
+        <section id="resultado-prediccion" class="ip-panel" hidden aria-live="polite">
+          <p class="text-secondary mb-1">Precio estimado de venta</p>
+          <p id="resultado-precio-usd" class="ip-resultado-precio mb-1"></p>
+          <p id="resultado-precio-pen" class="h5 text-secondary"></p>
+          <p id="resultado-rango" class="small text-secondary"></p>
+          <div id="aviso-fuera-rango" class="alert alert-warning small" hidden>
+            Los datos están fuera del rango con el que se entrenó el modelo: la estimación es menos confiable.
+          </div>
+          <button class="btn btn-outline-primary" id="btn-ir-publicar" type="button">
+            <i class="bi bi-megaphone"></i> Publicar con este precio
+          </button>
+        </section>
+
+        <section class="ip-panel mt-4">
+          <h2 class="h6">Mis consultas recientes</h2>
+          <div id="historial-predicciones" class="small text-secondary">Aún no hay consultas.</div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script type="module" src="/js/paginas/predecir.js"></script>
+</body>
+</html>

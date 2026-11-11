@@ -1,0 +1,33 @@
+{
+  "name": "inmo-predict",
+  "version": "0.1.0",
+  "description": "Sistema web de predicción de precios de venta de inmuebles con TensorFlow.js (Caso 01)",
+  "type": "module",
+  "main": "server/app.js",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon --watch server --watch shared server/app.js",
+    "start": "node server/app.js",
+    "seed": "node server/scripts/seed.js",
+    "dataset": "node ml/generar-dataset.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.12.1",
+    "multer": "^2.5.0",
+    "mysql2": "^3.24.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
