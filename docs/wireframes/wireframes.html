@@ -1,0 +1,219 @@
+<!doctype html>
+<!-- Wireframes de baja fidelidad de InmoPredict — dueño: Dev C (día 1)
+     Se abren con doble clic en el navegador. Las imágenes .png de esta carpeta salen de aquí. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wireframes · InmoPredict</title>
+  <style>
+    :root { --borde: #9aa3ad; --relleno: #eef0f3; --oscuro: #5b6470; --texto: #2b3138; --acento: #c2502f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px; background: #d9dde2; font: 14px/1.4 system-ui, 'Segoe UI', Roboto, Arial, sans-serif; color: var(--texto); }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    .nota { margin: 0 0 32px; color: #4a525c; }
+    .pantalla { width: 1000px; margin: 0 auto 48px; }
+    .pantalla > h2 { font-size: 16px; margin: 0 0 8px; }
+    .pantalla > h2 span { font-weight: 400; color: #4a525c; }
+    .wf { background: #fff; border: 2px solid var(--borde); border-radius: 10px; overflow: hidden; }
+    .nav { height: 48px; background: var(--oscuro); color: #fff; display: flex; align-items: center; gap: 24px; padding: 0 24px; font-weight: 600; }
+    .nav .der { margin-left: auto; display: flex; gap: 8px; }
+    .nav .chip { border: 1px solid #fff; border-radius: 6px; padding: 2px 10px; font-weight: 400; font-size: 12px; }
+    .nav .link { font-weight: 400; opacity: .8; font-size: 13px; }
+    .cuerpo { padding: 24px; display: grid; gap: 16px; }
+    .caja { background: var(--relleno); border: 1.5px dashed var(--borde); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; text-align: center; color: #4a525c; min-height: 40px; }
+    .caja.izq { justify-content: flex-start; text-align: left; }
+    .caja.foto { background: repeating-linear-gradient(45deg, #e4e7eb 0 10px, #eef0f3 10px 20px); }
+    .titulo { font-size: 20px; font-weight: 700; }
+    .boton { background: var(--acento); color: #fff; border-radius: 8px; padding: 10px; text-align: center; font-weight: 600; }
+    .boton.sec { background: #fff; color: var(--texto); border: 1.5px solid var(--borde); }
+    .precio { font-size: 26px; font-weight: 800; color: var(--acento); }
+    .fila { display: grid; gap: 12px; }
+    .campo { display: grid; gap: 4px; }
+    .campo b { font-size: 12px; }
+    .campo .input { height: 32px; border: 1.5px solid var(--borde); border-radius: 6px; background: #fff; }
+    .pie { height: 64px; background: var(--oscuro); color: #fff; display: flex; align-items: center; padding: 0 24px; font-size: 12px; opacity: .9; }
+    .card { border: 1.5px solid var(--borde); border-radius: 8px; overflow: hidden; }
+    .card .caja.foto { border: 0; border-radius: 0; height: 90px; }
+    .card .info { padding: 8px; display: grid; gap: 4px; font-size: 12px; }
+    .linea { height: 8px; background: #d7dbe0; border-radius: 4px; }
+    .tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--borde); }
+    .tabs div { padding: 8px 16px; border: 1.5px solid transparent; }
+    .tabs .activa { border-color: var(--borde); border-bottom-color: #fff; border-radius: 8px 8px 0 0; margin-bottom: -1.5px; background: #fff; font-weight: 600; }
+    .marca { background: var(--oscuro); color: #fff; padding: 24px; display: grid; gap: 12px; align-content: start; }
+    .marca .linea { background: rgba(255,255,255,.35); }
+    .etiqueta { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #4a525c; }
+    .aviso { border: 1.5px solid #e0b25c; background: #fff7e6; border-radius: 6px; padding: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>InmoPredict · Wireframes (baja fidelidad)</h1>
+  <p class="nota">Escritorio, 1280 px. Mismas estructuras en celular, apiladas en una columna. Los IDs entre corchetes son los acordados en la sección 7.1 del plan.</p>
+
+  <!-- 1. Catálogo -->
+  <section class="pantalla" id="wf-catalogo">
+    <h2>1. Catálogo público <span>· index.html · lo ven los clientes sin iniciar sesión</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><div class="der"><span class="chip">Ingresar</span><span class="chip">Registrarme</span></div></div>
+      <div class="cuerpo">
+        <div class="titulo">Inmuebles en venta</div>
+        <div class="fila" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr 80px;">
+          <div class="caja">Tipo ▾</div><div class="caja">Zona ▾</div><div class="caja izq">Distrito: ¿dónde buscas?</div>
+          <div class="caja">Precio mín.</div><div class="caja">Precio máx.</div><div class="boton">Buscar</div>
+        </div>
+        <div class="fila" style="grid-template-columns: 1fr auto;"><span>24 inmuebles</span><div class="caja" style="min-height:32px">Ordenar: más recientes ▾</div></div>
+        <div class="fila" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="card"><div class="caja foto">Foto · tipo y zona</div><div class="info"><b class="precio" style="font-size:16px">USD 316,000</b><span>S/ 1,169,200</span><div class="linea"></div><span>📍 Distrito, provincia</span><span>120 m² · 3 hab.</span></div></div>
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b class="precio" style="font-size:16px">USD …</b><span>S/ …</span><div class="linea"></div><span>📍 …</span><span>m² · hab.</span></div></div>
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b class="precio" style="font-size:16px">USD …</b><span>S/ …</span><div class="linea"></div><span>📍 …</span><span>m² · hab.</span></div></div>
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b class="precio" style="font-size:16px">USD …</b><span>S/ …</span><div class="linea"></div><span>📍 …</span><span>m² · hab.</span></div></div>
+        </div>
+        <div class="caja">Paginación  ‹ 1 2 3 ›</div>
+      </div>
+      <div class="pie">Footer · marca · enlaces · aviso legal</div>
+    </div>
+  </section>
+
+  <!-- 2. Detalle -->
+  <section class="pantalla" id="wf-detalle">
+    <h2>2. Detalle del inmueble <span>· detalle.html?id=12</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><div class="der"><span class="chip">Ingresar</span></div></div>
+      <div class="cuerpo">
+        <span>Catálogo › Departamento con vista al parque</span>
+        <div class="fila" style="grid-template-columns: 3fr 2fr;">
+          <div class="fila">
+            <div class="caja foto" style="height:260px">Foto principal (carrusel)</div>
+            <div class="fila" style="grid-template-columns: repeat(5, 1fr);"><div class="caja foto">1</div><div class="caja foto">2</div><div class="caja foto">3</div><div class="caja foto">4</div><div class="caja foto">5</div></div>
+          </div>
+          <div class="fila" style="align-content:start">
+            <div class="precio">USD 316,000</div><span>S/ 1,169,200</span>
+            <div class="titulo" style="font-size:16px">Departamento con vista al parque</div>
+            <span>📍 Víctor Larco Herrera, Trujillo · Centro</span>
+            <div class="fila" style="grid-template-columns: repeat(3, 1fr);"><div class="caja">120 m²</div><div class="caja">3 hab.</div><div class="caja">Año 2008</div></div>
+            <div class="caja izq">Precio estimado por IA: USD 311,500 (el pedido está 1 % por encima)</div>
+            <div class="boton">Contactar al propietario</div>
+          </div>
+        </div>
+        <div class="caja izq" style="min-height:70px">Descripción del inmueble</div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+
+  <!-- 3. Login -->
+  <section class="pantalla" id="wf-login">
+    <h2>3. Ingresar <span>· login.html · [form-login] [btn-login]</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><div class="der"><span class="chip">Ingresar</span><span class="chip">Registrarme</span></div></div>
+      <div class="cuerpo" style="padding:32px 120px">
+        <div class="fila" style="grid-template-columns: 2fr 3fr; gap:0; border:1.5px solid var(--borde); border-radius:10px; overflow:hidden">
+          <div class="marca"><b style="font-size:18px">Conoce cuánto vale tu inmueble</b><div class="linea"></div><div class="linea" style="width:80%"></div><span>✓ Estimación con IA</span><span>✓ Publica con precio sugerido</span><span>✓ Contraseña cifrada</span></div>
+          <div class="fila" style="padding:24px">
+            <div class="titulo">Ingresar</div><span>¿No tienes cuenta? Regístrate</span>
+            <div class="campo"><b>DNI</b><div class="input"></div><small>El mismo DNI con el que te registraste</small></div>
+            <div class="campo"><b>Contraseña</b><div class="input"></div><small style="text-align:right">👁 mostrar</small></div>
+            <div class="boton">Ingresar</div>
+          </div>
+        </div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+
+  <!-- 4. Registro -->
+  <section class="pantalla" id="wf-registro">
+    <h2>4. Crear cuenta <span>· registro.html · [form-registro] [btn-registrar]</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><div class="der"><span class="chip">Ingresar</span><span class="chip">Registrarme</span></div></div>
+      <div class="cuerpo" style="padding:32px 48px">
+        <div class="fila" style="grid-template-columns: 1fr 2fr; gap:0; border:1.5px solid var(--borde); border-radius:10px; overflow:hidden">
+          <div class="marca"><b style="font-size:18px">Crea tu cuenta de propietario</b><span>① Regístrate con tu DNI</span><span>② Obtén el precio estimado</span><span>③ Publica en el catálogo</span></div>
+          <div class="fila" style="padding:24px">
+            <div class="titulo">Crear cuenta</div>
+            <span class="etiqueta">Datos personales</span>
+            <div class="fila" style="grid-template-columns: 1fr 1fr 1fr;"><div class="campo"><b>DNI</b><div class="input"></div></div><div class="campo"><b>Nombres</b><div class="input"></div></div><div class="campo"><b>Apellidos</b><div class="input"></div></div></div>
+            <span class="etiqueta">Contacto</span>
+            <div class="fila" style="grid-template-columns: 1fr 1fr;"><div class="campo"><b>Celular (+51)</b><div class="input"></div></div><div class="campo"><b>Correo (opcional)</b><div class="input"></div></div></div>
+            <span class="etiqueta">Seguridad</span>
+            <div class="fila" style="grid-template-columns: 1fr 1fr; align-items:start;"><div class="campo"><b>Contraseña 👁</b><div class="input"></div><small>○ 8+ caracteres ○ mayúscula ○ minúscula ○ número</small></div><div class="campo"><b>Repite la contraseña 👁</b><div class="input"></div></div></div>
+            <div class="boton">Crear cuenta</div>
+          </div>
+        </div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+
+  <!-- 5. Estimar precio -->
+  <section class="pantalla" id="wf-predecir">
+    <h2>5. Estimar precio <span>· predecir.html · requiere sesión · [form-prediccion] [resultado-prediccion]</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><span class="link">Estimar precio</span><span class="link">Publicar</span><span class="link">Mi panel</span><div class="der"><span>👤 Ana</span><span class="chip">Salir</span></div></div>
+      <div class="cuerpo">
+        <div class="titulo">¿Cuánto vale tu inmueble?</div>
+        <div class="fila" style="grid-template-columns: 2fr 3fr;">
+          <div class="fila" style="border:1.5px solid var(--borde); border-radius:10px; padding:16px; align-content:start">
+            <div class="campo"><b>Superficie (m²)</b><div class="input"></div></div>
+            <div class="campo"><b>Número de habitaciones</b><div class="input"></div></div>
+            <div class="campo"><b>Ubicación (zona) ▾</b><div class="input"></div></div>
+            <div class="campo"><b>Año de construcción</b><div class="input"></div></div>
+            <div class="boton">Estimar precio [btn-predecir]</div>
+          </div>
+          <div class="fila" style="align-content:start">
+            <div class="fila" style="border:1.5px solid var(--borde); border-radius:10px; padding:16px">
+              <span>Precio estimado de venta</span><div class="precio" style="font-size:34px">USD 304,000</div><span>S/ 1,124,800</span><small>Rango probable: USD 285,760 – 322,240</small>
+              <div class="aviso">⚠ Fuera del rango de entrenamiento [aviso-fuera-rango]</div>
+              <div class="boton sec" style="width:220px">Publicar con este precio [btn-ir-publicar]</div>
+            </div>
+            <div class="caja izq" style="min-height:90px; align-items:flex-start">Mis consultas recientes [historial-predicciones]</div>
+          </div>
+        </div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+
+  <!-- 6. Publicar -->
+  <section class="pantalla" id="wf-publicar">
+    <h2>6. Publicar inmueble <span>· publicar.html · requiere sesión · [form-publicar]</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><span class="link">Estimar precio</span><span class="link">Publicar</span><span class="link">Mi panel</span><div class="der"><span>👤 Ana</span><span class="chip">Salir</span></div></div>
+      <div class="cuerpo" style="padding:24px 120px">
+        <div class="titulo">Publicar inmueble</div>
+        <div class="fila" style="border:1.5px solid var(--borde); border-radius:10px; padding:16px">
+          <div class="campo"><b>Título del aviso</b><div class="input"></div></div>
+          <div class="fila" style="grid-template-columns: 1fr 1fr;"><div class="campo"><b>Tipo ▾</b><div class="input"></div></div><div class="campo"><b>Zona ▾</b><div class="input"></div></div></div>
+          <div class="fila" style="grid-template-columns: 1fr 1fr 1fr;"><div class="campo"><b>Región</b><div class="input"></div></div><div class="campo"><b>Provincia</b><div class="input"></div></div><div class="campo"><b>Distrito</b><div class="input"></div></div></div>
+          <div class="fila" style="grid-template-columns: 1fr 1fr 1fr;"><div class="campo"><b>Superficie (m²)</b><div class="input"></div></div><div class="campo"><b>Habitaciones</b><div class="input"></div></div><div class="campo"><b>Año</b><div class="input"></div></div></div>
+          <div class="fila" style="grid-template-columns: 1fr 1fr;"><div class="campo"><b>Precio de venta (USD)</b><div class="input"></div></div><div class="caja izq">Estimado por IA: USD 304,000 · tu precio está 5 % arriba [comparativa-precio]</div></div>
+          <div class="caja izq" style="min-height:60px">Descripción</div>
+          <div class="fila" style="grid-template-columns: repeat(6, 1fr);"><div class="caja">＋ Fotos (hasta 5) [input-fotos]</div><div class="caja foto">1</div><div class="caja foto">2</div><div class="caja foto">3</div><div></div><div></div></div>
+          <div class="boton" style="width:160px">Publicar [btn-publicar]</div>
+        </div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+
+  <!-- 7. Panel -->
+  <section class="pantalla" id="wf-panel">
+    <h2>7. Mi panel <span>· panel.html · requiere sesión</span></h2>
+    <div class="wf">
+      <div class="nav">InmoPredict <span class="link">Catálogo</span><span class="link">Estimar precio</span><span class="link">Publicar</span><span class="link">Mi panel</span><div class="der"><span>👤 Ana</span><span class="chip">Salir</span></div></div>
+      <div class="cuerpo">
+        <div class="titulo">Mi panel</div>
+        <div class="tabs"><div class="activa">Mis inmuebles</div><div>Mis consultas</div></div>
+        <div class="fila" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b>USD 316,000</b><span>Departamento con vista…</span><div class="caja" style="min-height:28px">Estado: Publicado ▾</div><span>✎ Editar</span></div></div>
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b>USD 476,000</b><span>Casa amplia…</span><div class="caja" style="min-height:28px">Estado: Pausado ▾</div><span>✎ Editar</span></div></div>
+          <div class="card"><div class="caja foto">Foto</div><div class="info"><b>USD 171,000</b><span>Casa de campo…</span><div class="caja" style="min-height:28px">Estado: Vendido ▾</div><span>✎ Editar</span></div></div>
+          <div class="caja" style="min-height:180px">＋ Publicar otro inmueble</div>
+        </div>
+        <div class="caja izq">Pestaña "Mis consultas": tabla con fecha · superficie · hab. · zona · año · precio estimado</div>
+      </div>
+      <div class="pie">Footer</div>
+    </div>
+  </section>
+</body>
+</html>
