@@ -1,8 +1,31 @@
-/* Estilos propios con prefijo ip- para no chocar con Bootstrap — dueño: Dev C */
+/* =====================================================================
+   Estilos propios de InmoPredict — dueño: Dev C
+   Prefijo ip- para no chocar con Bootstrap. Valores: siempre var(--ip-…).
+   ===================================================================== */
+
+/* ---------- Estructura: el footer queda abajo aunque la página sea corta ---------- */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body > main {
+  flex: 1 0 auto;
+}
+
+/* Foco visible para quien navega con teclado */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ip-foco);
+  border-radius: var(--ip-radio-sm);
+}
+
+/* ---------- Navbar ---------- */
 .ip-navbar {
   background: var(--ip-color-primario);
 }
 
+/* ---------- Bloques comunes ---------- */
 .ip-titulo-pagina {
   color: var(--ip-color-primario);
   font-weight: 700;
@@ -13,16 +36,24 @@
   border: 1px solid var(--ip-color-borde);
   border-radius: var(--ip-radio);
   box-shadow: var(--ip-sombra);
-  padding: calc(var(--ip-espacio) * 1.5);
+  padding: var(--ip-espacio-4);
 }
 
+/* Botón principal (texto blanco sobre acento oscuro: contraste AA) */
 .btn-ip {
-  --bs-btn-bg: var(--ip-color-acento);
-  --bs-btn-border-color: var(--ip-color-acento);
+  --bs-btn-bg: var(--ip-color-acento-oscuro);
+  --bs-btn-border-color: var(--ip-color-acento-oscuro);
   --bs-btn-color: #fff;
-  --bs-btn-hover-bg: #d45d3f;
-  --bs-btn-hover-border-color: #d45d3f;
+  --bs-btn-hover-bg: var(--ip-color-acento-hover);
+  --bs-btn-hover-border-color: var(--ip-color-acento-hover);
   --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--ip-color-acento-hover);
+  --bs-btn-active-border-color: var(--ip-color-acento-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--ip-color-acento-oscuro);
+  --bs-btn-disabled-border-color: var(--ip-color-acento-oscuro);
+  --bs-btn-focus-shadow-rgb: 194, 80, 47;
+  font-weight: 600;
 }
 
 /* ---------- Tarjeta de inmueble ---------- */
@@ -31,11 +62,11 @@
   box-shadow: var(--ip-sombra);
   color: var(--ip-color-texto);
   overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--ip-transicion), box-shadow var(--ip-transicion);
 }
 .ip-card-inmueble:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(20, 30, 50, 0.14);
+  box-shadow: var(--ip-sombra-alta);
 }
 .ip-card-foto {
   position: relative;
@@ -49,13 +80,13 @@
 }
 .ip-badge-tipo {
   position: absolute;
-  left: 0.75rem;
-  bottom: 0.75rem;
+  left: var(--ip-espacio-3);
+  bottom: var(--ip-espacio-3);
   background: var(--ip-color-primario);
 }
 .ip-precio {
   color: var(--ip-color-acento);
-  font-size: 1.25rem;
+  font-size: var(--ip-texto-lg);
   font-weight: 700;
 }
 .ip-precio-pen,
@@ -67,7 +98,119 @@
 /* ---------- Resultado de la predicción ---------- */
 .ip-resultado-precio {
   color: var(--ip-color-acento);
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: var(--ip-texto-precio);
   font-weight: 800;
   line-height: 1.1;
+}
+
+/* ---------- Páginas de acceso (login y registro) ---------- */
+.ip-acceso {
+  max-width: 980px;
+}
+.ip-acceso-tarjeta {
+  background: var(--ip-color-superficie);
+  border: 1px solid var(--ip-color-borde);
+  border-radius: var(--ip-radio);
+  box-shadow: var(--ip-sombra-alta);
+  overflow: hidden;
+}
+.ip-acceso-marca {
+  background: linear-gradient(160deg, var(--ip-color-primario) 0%, var(--ip-color-primario-oscuro) 100%);
+  color: #fff;
+  padding: var(--ip-espacio-5);
+}
+.ip-acceso-marca h2 {
+  font-size: var(--ip-texto-xl);
+  font-weight: 700;
+}
+.ip-acceso-marca p,
+.ip-acceso-marca li {
+  color: rgba(255, 255, 255, 0.85);
+}
+.ip-acceso-beneficios {
+  list-style: none;
+  padding: 0;
+  margin: var(--ip-espacio-4) 0 0;
+}
+.ip-acceso-beneficios li {
+  display: flex;
+  gap: var(--ip-espacio-3);
+  margin-bottom: var(--ip-espacio-3);
+}
+.ip-acceso-beneficios i {
+  color: var(--ip-color-acento);
+  font-size: var(--ip-texto-lg);
+  line-height: 1.2;
+}
+.ip-acceso-form {
+  padding: var(--ip-espacio-5);
+}
+.ip-seccion-form {
+  font-size: var(--ip-texto-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ip-color-primario-claro);
+  margin: var(--ip-espacio-4) 0 var(--ip-espacio-2);
+}
+.ip-seccion-form:first-of-type {
+  margin-top: 0;
+}
+
+/* Lista de requisitos de la contraseña (registro.js la actualiza en vivo desde el día 2) */
+.ip-requisitos {
+  list-style: none;
+  padding: 0;
+  margin: var(--ip-espacio-2) 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ip-espacio-1) var(--ip-espacio-3);
+  font-size: var(--ip-texto-sm);
+  color: var(--ip-color-texto-suave);
+}
+.ip-requisitos li::before {
+  content: '○ ';
+}
+.ip-requisitos li.ip-cumple {
+  color: var(--ip-color-exito);
+}
+.ip-requisitos li.ip-cumple::before {
+  content: '✓ ';
+}
+
+/* ---------- Footer ---------- */
+.ip-footer {
+  background: var(--ip-color-primario);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: var(--ip-espacio-6);
+  padding: var(--ip-espacio-5) 0 var(--ip-espacio-4);
+  font-size: var(--ip-texto-sm);
+}
+.ip-footer h2 {
+  color: #fff;
+  font-size: var(--ip-texto-md);
+  font-weight: 700;
+}
+.ip-footer a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+.ip-footer a:hover,
+.ip-footer a:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+}
+.ip-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ip-footer li + li {
+  margin-top: var(--ip-espacio-1);
+}
+.ip-footer-legal {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: var(--ip-espacio-4);
+  padding-top: var(--ip-espacio-3);
+  color: rgba(255, 255, 255, 0.65);
 }
