@@ -1,24 +1,26 @@
-// Autenticación con JWT — dueño: Dev A (día 2)
-//
 // verificarToken: lee "Authorization: Bearer <token>", lo valida con JWT_SECRET
 //                 y deja el usuario en req.usuario = { id_usuario, dni, nombres, rol }.
-//                 Sin token o vencido → 401 NO_AUTENTICADO.
+//                 Sin token, inválido o vencido → 401 NO_AUTENTICADO.
 // soloRol('admin'): si req.usuario.rol no coincide → 403 SIN_PERMISO.
 import jwt from 'jsonwebtoken';
 import { fallo } from '../utils/respuesta.js';
 
 export function verificarToken(req, res, next) {
-  // TODO (Dev A, día 2): revisar y probar con Postman
   const cabecera = req.headers.authorization || '';
   const [tipo, token] = cabecera.split(' ');
   if (tipo !== 'Bearer' || !token) {
     return fallo(res, 401, 'NO_AUTENTICADO', 'Inicia sesión para continuar');
   }
   try {
-    req.usuario = jwt.verify(token, process.env.JWT_SECRET);
+    // Se fija el algoritmo con el que firmamos para que no se acepte otro distinto
+    req.usuario = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     return next();
-  } catch {
-    return fallo(res, 401, 'NO_AUTENTICADO', 'Tu sesión venció, vuelve a iniciar sesión');
+  } catch (err) {
+    const mensaje =
+      err instanceof jwt.TokenExpiredError
+        ? 'Tu sesión venció, vuelve a iniciar sesión'
+        : 'Sesión no válida, vuelve a iniciar sesión';
+    return fallo(res, 401, 'NO_AUTENTICADO', mensaje);
   }
 }
 
