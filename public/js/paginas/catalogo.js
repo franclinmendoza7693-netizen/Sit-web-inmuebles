@@ -2,6 +2,7 @@
  * InmoPredict — Catálogo y Filtros Reactivos
  * Dueño: Dev C (Frontend y UX)
  */
+import '../componentes/navbar.js';
 import { api } from '../api.js';
 import { crearCardInmueble } from '../componentes/card-inmueble.js';
 
