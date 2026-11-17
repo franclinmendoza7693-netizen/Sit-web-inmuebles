@@ -4,8 +4,8 @@
 // tf (TensorFlow.js), tfvis (tfjs-vis) y Papa (Papa Parse) llegan como
 // globales por CDN desde el HTML: no se importan.
 //
-// Día 1 (hecho): cargar el CSV, revisar el dataset y preprocesar (80/20, min-max, one-hot).
-// Día 2: entrenar, evaluar y exportar (botones 2, 3 y 4).
+// Día 1: cargar CSV, resumen y preprocesamiento (80/20, min-max, one-hot).
+// Día 2: entrenar red neuronal, evaluar vs línea base y exportar modelo.
 // =====================================================================
 import { renderNavbar } from '../componentes/navbar.js';
 import { protegerPagina } from '../auth.js';
@@ -17,28 +17,34 @@ import {
   prepararDatos,
   resumir,
   vectorizar,
+  desescalar,
   fueraDeRango,
 } from '../modelo/preprocesamiento.js';
 import { CASOS_ENUNCIADO } from '../modelo/casos-enunciado.js';
 
 const RUTA_CSV = '/admin/datos/inmuebles.csv';
 
-// Mientras no exista el login (lo hace Dev A el día 2), la página se abre sin sesión.
-// TODO (día 2, cuando el login funcione): cambiar a true para que solo entre el admin.
-const REQUIERE_ADMIN = false;
+if (protegerPagina({ rol: 'admin' })) renderNavbar();
 
-if (!REQUIERE_ADMIN || protegerPagina({ rol: 'admin' })) renderNavbar();
-
-// Estado compartido entre los pasos (el día 2 se agregan modelo y métricas)
-const estado = { filas: null, datos: null };
+// Estado compartido del entrenamiento y evaluación
+const estado = {
+  filas: null,
+  datos: null,
+  modelo: null,
+  lineaBase: null,
+  metricasRed: null,
+  metricasLineaBase: null,
+};
 
 const $ = (id) => document.getElementById(id);
 const txtEstado = $('estado-entrenamiento');
 const zonaMetricas = $('metricas-modelo');
 const zonaGraficos = $('graficos-entrenamiento');
+
 const numero = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
 const decimal = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 3 });
-const sinMiles = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1, useGrouping: false }); // años: 1970, no 1,970
+const sinMiles = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1, useGrouping: false });
+const formatoDolar = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
 const NOMBRES = {
   superficie_m2: 'Superficie (m²)',
@@ -47,17 +53,20 @@ const NOMBRES = {
   precio_miles_usd: 'Precio (miles USD)',
 };
 
-// Los pasos del día 2 quedan desactivados por ahora
-for (const id of ['btn-entrenar', 'btn-evaluar', 'btn-exportar']) {
-  $(id).disabled = true;
-  $(id).title = 'Disponible desde el día 2';
-}
-
+// Listeners de los 4 pasos
 $('btn-cargar-datos').addEventListener('click', cargarDatos);
+$('btn-entrenar').addEventListener('click', entrenarModelo);
+$('btn-evaluar').addEventListener('click', evaluarModelos);
+$('btn-exportar').addEventListener('click', exportarArchivos);
 
-// ---------------------------------------------------------------------
-// Paso 1: cargar y revisar el dataset
-// ---------------------------------------------------------------------
+// Inicialmente los botones 2, 3 y 4 quedan deshabilitados hasta cargar datos
+$('btn-entrenar').disabled = true;
+$('btn-evaluar').disabled = true;
+$('btn-exportar').disabled = true;
+
+// =====================================================================
+// PASO 1: Cargar datos
+// =====================================================================
 async function cargarDatos() {
   const boton = $('btn-cargar-datos');
   boton.disabled = true;
@@ -71,7 +80,7 @@ async function cargarDatos() {
     if (!validas.length) throw new Error('El CSV no tiene filas válidas');
 
     estado.filas = validas;
-    estado.datos = prepararDatos(validas); // separación 80/20 + normalización + vectores
+    estado.datos = prepararDatos(validas);
 
     const { datos } = estado;
     txtEstado.textContent =
@@ -83,9 +92,8 @@ async function cargarDatos() {
     mostrarCasosEnunciado(datos.normalizacion);
     mostrarGraficos(validas);
 
-    // Para revisar desde la consola del navegador: inmoDatos.xEntrenamiento, inmoDatos.normalizacion…
     globalThis.inmoDatos = datos;
-    console.info('Datos preparados (ver window.inmoDatos):', datos);
+    $('btn-entrenar').disabled = false;
   } catch (error) {
     txtEstado.textContent = `✖ ${error.message}`;
     console.error(error);
@@ -101,15 +109,273 @@ function leerCsv(url) {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
-      complete: (resultado) => resolver(resultado.data),
+      complete: (res) => resolver(res.data),
       error: (err) => rechazar(new Error(`No se pudo leer ${url}: ${err.message || err}`)),
     });
   });
 }
 
-// ---------------------------------------------------------------------
-// Vistas
-// ---------------------------------------------------------------------
+// =====================================================================
+// PASO 2: Entrenar Red Neuronal (6 -> 16 -> 8 -> 1)
+// =====================================================================
+async function entrenarModelo() {
+  if (!estado.datos) return;
+  const btn = $('btn-entrenar');
+  btn.disabled = true;
+  txtEstado.textContent = 'Entrenando Red Neuronal con TensorFlow.js...';
+
+  // 1. Convertir arreglos preprocesados a Tensores 2D
+  const xs = tf.tensor2d(estado.datos.xEntrenamiento);
+  const ys = tf.tensor2d(estado.datos.yEntrenamiento);
+
+  // 2. Definir arquitectura: 6 -> 16 (relu) -> 8 (relu) -> 1 (linear)
+  const red = tf.sequential();
+  red.add(tf.layers.dense({ units: 16, activation: 'relu', inputShape: [6] }));
+  red.add(tf.layers.dense({ units: 8, activation: 'relu' }));
+  red.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+
+  red.compile({
+    optimizer: tf.train.adam(0.01),
+    loss: 'meanSquaredError',
+    metrics: ['mae'],
+  });
+
+  // Callbacks para visor visual (tfjs-vis) y parada temprana
+  const visor = tfvis.visor();
+  if (!visor.isOpen()) visor.open();
+
+  const fitCallbacks = tfvis.show.fitCallbacks(
+    { name: 'Curvas de Entrenamiento (Red Neuronal)', tab: 'Entrenamiento' },
+    ['loss', 'val_loss', 'mae', 'val_mae'],
+    { callbacks: ['onEpochEnd'] }
+  );
+
+  // Implementación segura de parada temprana (evita el bug de getMonitorValue en TF.js)
+  let mejorPerdida = Infinity;
+  let paciencia = 15;
+  let conteoSinMejora = 0;
+
+  const controlParada = {
+    onEpochEnd: async (epoch, logs) => {
+      if (logs.val_loss < mejorPerdida) {
+        mejorPerdida = logs.val_loss;
+        conteoSinMejora = 0;
+      } else {
+        conteoSinMejora++;
+        if (conteoSinMejora >= paciencia) {
+          console.log(`Parada temprana en época ${epoch + 1}: val_loss dejó de mejorar.`);
+          red.stopTraining = true;
+        }
+      }
+    }
+  };
+
+  try {
+    await red.fit(xs, ys, {
+      epochs: 150,
+      batchSize: 32,
+      validationSplit: 0.2,
+      shuffle: true,
+      callbacks: [fitCallbacks, controlParada],
+    });
+
+    estado.modelo = red;
+    txtEstado.textContent = '✔ Red Neuronal entrenada. Procede al Paso 3: Evaluar.';
+    $('btn-evaluar').disabled = false;
+  } catch (err) {
+    txtEstado.textContent = `✖ Error al entrenar: ${err.message}`;
+    console.error(err);
+  } finally {
+    xs.dispose();
+    ys.dispose();
+    btn.disabled = false;
+  }
+}
+
+// =====================================================================
+// PASO 3: Evaluar (Red vs Línea Base) y Casos de Aceptación
+// =====================================================================
+async function evaluarModelos() {
+  if (!estado.modelo || !estado.datos) return;
+  const btn = $('btn-evaluar');
+  btn.disabled = true;
+  txtEstado.textContent = 'Evaluando Red Neuronal y entrenando Línea Base (Regresión Lineal)...';
+
+  try {
+    const { normalizacion, xEntrenamiento, yEntrenamiento, xPrueba, yPrueba } = estado.datos;
+
+    // 1. Entrenar Línea Base (dense 1 sola neurona) para justificar la red en el informe
+    const lineaBase = tf.sequential();
+    lineaBase.add(tf.layers.dense({ units: 1, activation: 'linear', inputShape: [6] }));
+    lineaBase.compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError', metrics: ['mae'] });
+
+    const xsTrain = tf.tensor2d(xEntrenamiento);
+    const ysTrain = tf.tensor2d(yEntrenamiento);
+    await lineaBase.fit(xsTrain, ysTrain, { epochs: 60, batchSize: 32, verbose: 0 });
+    xsTrain.dispose();
+    ysTrain.dispose();
+    estado.lineaBase = lineaBase;
+
+    // 2. Calcular métricas en USD sobre el 20% de prueba (test)
+    const xsTest = tf.tensor2d(xPrueba);
+    const predsRed = estado.modelo.predict(xsTest).dataSync();
+    const predsLB = estado.lineaBase.predict(xsTest).dataSync();
+    xsTest.dispose();
+
+    const yTestRealMiles = yPrueba.map((y) => desescalar(y[0], OBJETIVO, normalizacion));
+    const predsRedUSD = Array.from(predsRed).map((p) => Math.round(desescalar(p, OBJETIVO, normalizacion) * 1000));
+    const predsLbUSD = Array.from(predsLB).map((p) => Math.round(desescalar(p, OBJETIVO, normalizacion) * 1000));
+    const realesUSD = yTestRealMiles.map((y) => Math.round(y * 1000));
+
+    estado.metricasRed = calcularMetricas(realesUSD, predsRedUSD);
+    estado.metricasLineaBase = calcularMetricas(realesUSD, predsLbUSD);
+
+    // 3. Evaluar los 5 casos del enunciado con la Red
+    const prediccionesEnunciado = CASOS_ENUNCIADO.map((c) => {
+      const vec = vectorizar(c, normalizacion);
+      const salidaNorm = tf.tidy(() => estado.modelo.predict(tf.tensor2d([vec])).dataSync()[0]);
+      const predMiles = desescalar(salidaNorm, OBJETIVO, normalizacion);
+      const predUSD = Math.round(predMiles * 1000);
+      const esperadoUSD = c.precio_miles_usd * 1000;
+      const difPct = ((predUSD - esperadoUSD) / esperadoUSD) * 100;
+      return {
+        ...c,
+        predUSD,
+        difPct,
+        cumple: Math.abs(difPct) <= 10,
+      };
+    });
+
+    mostrarResultadosEvaluacion(prediccionesEnunciado);
+    txtEstado.textContent = '✔ Evaluación completada. Revisa las métricas y exporta el modelo.';
+    $('btn-exportar').disabled = false;
+  } catch (err) {
+    txtEstado.textContent = `✖ Error al evaluar: ${err.message}`;
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function calcularMetricas(reales, predichos) {
+  const n = reales.length;
+  let sumaErrorAbs = 0;
+  let sumaErrorCuad = 0;
+  let sumaReales = 0;
+
+  for (let i = 0; i < n; i++) {
+    const error = predichos[i] - reales[i];
+    sumaErrorAbs += Math.abs(error);
+    sumaErrorCuad += error * error;
+    sumaReales += reales[i];
+  }
+
+  const promedioReal = sumaReales / n;
+  let ssTot = 0;
+  for (let i = 0; i < n; i++) ssTot += Math.pow(reales[i] - promedioReal, 2);
+
+  const mae = Math.round(sumaErrorAbs / n);
+  const mse = Math.round(sumaErrorCuad / n);
+  const rmse = Math.round(Math.sqrt(mse));
+  const r2 = Number((1 - sumaErrorCuad / ssTot).toFixed(4));
+  const errorPct = Number(((mae / promedioReal) * 100).toFixed(2));
+
+  return { mae, mse, rmse, r2, errorPct, promedioReal };
+}
+
+// =====================================================================
+// PASO 4: Exportar modelo y normalización
+// =====================================================================
+async function exportarArchivos() {
+  if (!estado.modelo || !estado.datos || !estado.metricasRed) return;
+  const btn = $('btn-exportar');
+  btn.disabled = true;
+  txtEstado.textContent = 'Exportando modelo y normalización...';
+
+  try {
+    // 1. Descargar modelo_inmuebles.json y modelo_inmuebles.weights.bin
+    await estado.modelo.save('downloads://modelo_inmuebles');
+
+    // 2. Construir objeto normalizacion.json oficial (sección 6.2 del plan)
+    const { normalizacion } = estado.datos;
+    const objetoNormalizacion = {
+      version_modelo: '1.0.0',
+      entradas: ENTRADAS_MODELO,
+      min: normalizacion.min,
+      max: normalizacion.max,
+      metricas_test: {
+        mse: estado.metricasRed.mse,
+        mae_usd: estado.metricasRed.mae,
+        rmse_usd: estado.metricasRed.rmse,
+        r2: estado.metricasRed.r2,
+      },
+    };
+
+    // Descargar normalizacion.json
+    const blob = new Blob([JSON.stringify(objetoNormalizacion, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'normalizacion.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    txtEstado.textContent =
+      '✔ ¡Archivos descargados! Copia los 3 archivos desde Descargas hacia tu carpeta public/modelo/';
+  } catch (err) {
+    txtEstado.textContent = `✖ Error al exportar: ${err.message}`;
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// =====================================================================
+// Vistas auxiliares
+// =====================================================================
+function mostrarResultadosEvaluacion(casos) {
+  agregarTitulo(zonaMetricas, 'Comparativa de Modelos en Test (20% no visto)');
+
+  const red = estado.metricasRed;
+  const lb = estado.metricasLineaBase;
+
+  const tablaComp = crearTabla(
+    ['Modelo', 'R² (Meta > 0.90)', 'MAE (Error medio en USD)', 'Error % sobre precio medio', 'RMSE'],
+    [
+      [
+        'Red Neuronal (6 → 16 → 8 → 1)',
+        `${red.r2} ${red.r2 >= 0.9 ? '✔ Cumple' : '✖'}`,
+        formatoDolar.format(red.mae),
+        `${red.errorPct} % ${red.errorPct < 6 ? '✔ (< 6%)' : ''}`,
+        formatoDolar.format(red.rmse),
+      ],
+      [
+        'Línea Base (Regresión Lineal)',
+        `${lb.r2}`,
+        formatoDolar.format(lb.mae),
+        `${lb.errorPct} %`,
+        formatoDolar.format(lb.rmse),
+      ],
+    ]
+  );
+  zonaMetricas.append(tablaComp);
+
+  agregarTitulo(zonaMetricas, 'Casos de Aceptación del Enunciado (Tolerancia ±10 %)');
+  const tablaCasos = crearTabla(
+    ['Superficie', 'Hab.', 'Zona', 'Año', 'Esperado (USD)', 'Predicción Red (USD)', 'Diferencia %', 'Aceptación'],
+    casos.map((c) => [
+      `${c.superficie_m2} m²`,
+      c.num_habitaciones,
+      ETIQUETAS[c.zona],
+      c.anio_construccion,
+      formatoDolar.format(c.precio_miles_usd * 1000),
+      formatoDolar.format(c.predUSD),
+      `${c.difPct > 0 ? '+' : ''}${c.difPct.toFixed(1)} %`,
+      c.cumple ? '✔ Cumple (≤ 10%)' : '✖ Fuera de rango',
+    ])
+  );
+  zonaMetricas.append(tablaCasos);
+}
+
 function mostrarResumen(resumen) {
   agregarTitulo(zonaMetricas, 'Resumen del dataset');
   zonaMetricas.append(
@@ -123,66 +389,34 @@ function mostrarResumen(resumen) {
           formato.format(resumen.columnas[c].max),
           formato.format(resumen.columnas[c].promedio),
         ];
-      }),
-    ),
-  );
-  zonaMetricas.append(
-    crearTabla(
-      ['Zona', 'Inmuebles', '% del total', 'Precio promedio (miles USD)'],
-      Object.entries(resumen.zonas).map(([zona, n]) => [
-        ETIQUETAS[zona],
-        n,
-        `${numero.format((n / resumen.total) * 100)} %`,
-        numero.format(resumen.precioPromedioZona[zona]),
-      ]),
-    ),
+      })
+    )
   );
 }
 
 function mostrarNormalizacion(datos) {
   agregarTitulo(zonaMetricas, 'Preprocesamiento');
-  const p = document.createElement('p');
-  p.className = 'small text-secondary';
-  p.textContent =
-    'Min-max calculado solo con el set de entrenamiento. Este bloque es la base de normalizacion.json ' +
-    '(el día 2 se le agregan version_modelo y metricas_test).';
-  zonaMetricas.append(p);
-
   const pre = document.createElement('pre');
   pre.className = 'ip-panel small mb-3';
   pre.textContent = JSON.stringify(datos.normalizacion, null, 2);
   zonaMetricas.append(pre);
-
-  const f = datos.entrenamiento[0];
-  const ejemplo = document.createElement('p');
-  ejemplo.className = 'small';
-  ejemplo.textContent =
-    `Ejemplo → ${f.superficie_m2} m², ${f.num_habitaciones} hab., ${f.zona}, ${f.anio_construccion}: ` +
-    `[${datos.xEntrenamiento[0].map((v) => decimal.format(v)).join(', ')}] ` +
-    `→ precio escalado ${decimal.format(datos.yEntrenamiento[0][0])}`;
-  zonaMetricas.append(ejemplo);
 }
 
 function mostrarCasosEnunciado(norm) {
-  agregarTitulo(zonaMetricas, 'Casos del enunciado (aceptación: ±10 %)');
+  agregarTitulo(zonaMetricas, 'Casos del enunciado (datos base)');
   zonaMetricas.append(
     crearTabla(
-      ['Superficie', 'Hab.', 'Zona', 'Año', 'Precio esperado (miles USD)', 'Dentro del rango', 'Vector de entrada'],
+      ['Superficie', 'Hab.', 'Zona', 'Año', 'Esperado (miles USD)', 'Vector entrada'],
       CASOS_ENUNCIADO.map((c) => [
         c.superficie_m2,
         c.num_habitaciones,
         ETIQUETAS[c.zona],
         c.anio_construccion,
         c.precio_miles_usd,
-        fueraDeRango(c, norm) ? '✖ no' : '✔ sí',
         `[${vectorizar(c, norm).map((v) => decimal.format(v)).join(', ')}]`,
-      ]),
-    ),
+      ])
+    )
   );
-  const nota = document.createElement('p');
-  nota.className = 'small text-secondary';
-  nota.textContent = `Orden de entradas: ${ENTRADAS_MODELO.join(', ')}. El día 2 se agrega la columna "Predicción del modelo".`;
-  zonaMetricas.append(nota);
 }
 
 function mostrarGraficos(filas) {
@@ -203,38 +437,20 @@ function mostrarGraficos(filas) {
     return lienzo;
   };
 
-  // Precio vs. superficie, una serie por zona
   const dispersion = caja('Precio según superficie y zona');
   const series = ['centro', 'suburbio', 'rural'];
   tfvis.render.scatterplot(
     dispersion,
     {
       values: series.map((z) =>
-        filas.filter((f) => f.zona === z).map((f) => ({ x: f.superficie_m2, y: f[OBJETIVO] })),
+        filas.filter((f) => f.zona === z).map((f) => ({ x: f.superficie_m2, y: f[OBJETIVO] }))
       ),
       series: series.map((z) => ETIQUETAS[z]),
     },
-    { xLabel: NOMBRES.superficie_m2, yLabel: NOMBRES.precio_miles_usd, height: 320, width: dispersion.clientWidth || 700 },
-  );
-
-  const barras = caja('Inmuebles por zona', 'col-md-6');
-  tfvis.render.barchart(
-    barras,
-    series.map((z) => ({ index: ETIQUETAS[z], value: filas.filter((f) => f.zona === z).length })),
-    { xLabel: 'Zona', yLabel: 'Inmuebles', height: 260, width: barras.clientWidth || 340 },
-  );
-
-  const histograma = caja('Distribución de precios', 'col-md-6');
-  tfvis.render.histogram(
-    histograma,
-    filas.map((f) => f[OBJETIVO]),
-    { xLabel: NOMBRES.precio_miles_usd, height: 260, width: histograma.clientWidth || 340, maxBins: 25 },
+    { xLabel: NOMBRES.superficie_m2, yLabel: NOMBRES.precio_miles_usd, height: 320, width: dispersion.clientWidth || 700 }
   );
 }
 
-// ---------------------------------------------------------------------
-// Utilidades de interfaz
-// ---------------------------------------------------------------------
 function agregarTitulo(contenedor, texto) {
   const h = document.createElement('h2');
   h.className = 'h5 mt-4';
@@ -261,17 +477,3 @@ function crearTabla(encabezados, filas) {
   envoltura.append(tabla);
   return envoltura;
 }
-
-// =====================================================================
-// TODO (Dev B, día 2) — sección 6.3 del plan
-//   1. const xs = tf.tensor2d(estado.datos.xEntrenamiento); const ys = tf.tensor2d(estado.datos.yEntrenamiento);
-//   2. Modelo: dense(16, relu, inputShape [6]) → dense(8, relu) → dense(1)
-//      compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError', metrics: ['mae'] })
-//   3. fit: epochs 150, batchSize 32, validationSplit 0.2,
-//      callbacks: [tfvis.show.fitCallbacks(...), tf.callbacks.earlyStopping({ patience: 15 })]
-//   4. Evaluar con xPrueba/yPrueba: MSE, MAE, RMSE, R² en USD (desescalar con preprocesamiento.desescalar)
-//      y repetir con una sola capa dense(1) como línea base.
-//   5. Columna "Predicción del modelo" en la tabla de casos del enunciado.
-//   6. Exportar: modelo.save('downloads://modelo_inmuebles') + normalizacion.json
-//      ({ version_modelo, entradas, min, max, metricas_test }).
-// =====================================================================
