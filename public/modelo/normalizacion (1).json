@@ -21,9 +21,9 @@
     "precio_miles_usd": 1077
   },
   "metricas_test": {
-    "mse": 4377812954,
-    "mae_usd": 25912,
-    "rmse_usd": 66165,
-    "r2": 0.8641
+    "mse": 421065723,
+    "mae_usd": 16108,
+    "rmse_usd": 20520,
+    "r2": 0.9869
   }
 }
