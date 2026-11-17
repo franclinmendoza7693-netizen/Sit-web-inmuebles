@@ -1,6 +1,6 @@
-// Controlador de autenticación — dueño: Dev A
 import bcrypt from 'bcryptjs';
-import { creado, fallo, pendiente } from '../utils/respuesta.js';
+import jwt from 'jsonwebtoken';
+import { ok, creado, fallo, pendiente } from '../utils/respuesta.js';
 import * as Usuario from '../models/usuario.model.js';
 
 const RONDAS_BCRYPT = 10;
@@ -33,12 +33,27 @@ export async function registro(req, res) {
   }
 }
 
-// POST /api/auth/login — día 2
-// Si el DNI no existe o la contraseña no coincide → 401 CREDENCIALES_INVALIDAS (mismo mensaje en ambos casos)
-// token = jwt.sign({ id_usuario, dni, nombres, rol }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRA })
-// Responder ok(res, { token, usuario: { id_usuario, dni, nombres, rol } })
+// Hash de relleno: si el DNI no existe igual hacemos un bcrypt.compare, para que
+// "DNI inexistente" y "contraseña incorrecta" tarden lo mismo y no se pueda averiguar qué DNI existen.
+const HASH_RELLENO = bcrypt.hashSync('relleno-sin-usuario', RONDAS_BCRYPT);
+
+// POST /api/auth/login
+// DNI inexistente o contraseña incorrecta → 401 CREDENCIALES_INVALIDAS (mismo mensaje en ambos casos)
 export async function login(req, res) {
-  return pendiente(res);
+  const { dni, password } = req.body;
+
+  const usuario = await Usuario.buscarPorDni(dni);
+  const coincide = await bcrypt.compare(password, usuario ? usuario.password_hash : HASH_RELLENO);
+
+  if (!usuario || !coincide) {
+    return fallo(res, 401, 'CREDENCIALES_INVALIDAS', 'DNI o contraseña incorrectos');
+  }
+
+  // El token lleva solo lo necesario; nunca el hash ni datos sensibles
+  const datos = { id_usuario: usuario.id_usuario, dni: usuario.dni, nombres: usuario.nombres, rol: usuario.rol };
+  const token = jwt.sign(datos, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRA });
+
+  return ok(res, { token, usuario: datos }, 'Sesión iniciada');
 }
 
 // GET /api/auth/perfil — día 2  → datos de req.usuario.id_usuario
