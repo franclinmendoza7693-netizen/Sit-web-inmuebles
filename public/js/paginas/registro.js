@@ -2,6 +2,7 @@
  * InmoPredict — Página de Registro de Propietarios
  * Dueño: Dev C (Frontend y UX)
  */
+import '../componentes/navbar.js';
 import { REGEX } from '/shared/contrato.js';
 import { api, ApiError } from '../api.js';
 import { guardarSesion, estaAutenticado } from '../auth.js';
