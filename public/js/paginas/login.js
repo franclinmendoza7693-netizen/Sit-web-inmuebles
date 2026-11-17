@@ -66,8 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
       guardarSesion(data);
 
       const params = new URLSearchParams(window.location.search);
-      const destino = params.get('redir') ? decodeURIComponent(params.get('redir')) : '/panel.html';
-      window.location.href = destino;
+      const volver = decodeURIComponent(params.get('redir') || '');
+      // Solo rutas internas: "//sitio.com" o "/\sitio.com" mandarían al usuario a otro dominio
+      const esRutaInterna = volver.startsWith('/') && !volver.startsWith('//') && !volver.startsWith('/\\');
+      window.location.href = esRutaInterna ? volver : '/panel.html';
 
     } catch (err) {
       btnLogin.disabled = false;
