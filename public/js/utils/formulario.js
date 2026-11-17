@@ -21,7 +21,10 @@ export function pintarErrores(form, campos = {}) {
     const aviso = document.createElement('div');
     aviso.className = 'invalid-feedback';
     aviso.textContent = mensaje;
-    input.insertAdjacentElement('afterend', aviso);
+    // Dentro de un input-group (icono, +51, botón del ojo) el aviso va al final del grupo
+    const grupo = input.closest('.input-group');
+    if (grupo) grupo.append(aviso);
+    else input.insertAdjacentElement('afterend', aviso);
   }
 }
 

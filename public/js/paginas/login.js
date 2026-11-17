@@ -1,11 +1,13 @@
 // Inicio de sesión — dueño: Dev C (día 2)
 import { renderNavbar } from '../componentes/navbar.js';
+import { activarVerPassword } from '../componentes/ver-password.js';
 // import { api } from '../api.js';
 // import { guardarSesion } from '../auth.js';
 // import { leerFormulario, pintarErrores } from '../utils/formulario.js';
 // import { REGEX, MENSAJES } from '/shared/contrato.js';
 
 renderNavbar();
+activarVerPassword(); // botones del ojo para ver la contraseña (día 1)
 
 // TODO (Dev C, día 2):
 // 1. Validar en vivo el DNI con REGEX.dni.
