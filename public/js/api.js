@@ -1,56 +1,67 @@
-// Única puerta de entrada a la API — lo usan Dev B y Dev C — dueño: Dev C
-//
-//   const data = await api('/inmuebles?zona=centro');
-//   const data = await api('/auth/login', { metodo: 'POST', datos: { dni, password } });
-//   const data = await api('/inmuebles', { metodo: 'POST', formData });
-//
-// Devuelve `data` si ok === true. Si no, lanza ApiError { codigo, mensaje, campos, status }.
-// Ante NO_AUTENTICADO borra la sesión y redirige a /login.html.
+/**
+ * InmoPredict — Cliente HTTP centralizado
+ * Dueño: Dev C (Frontend y UX)
+ */
 import { API_URL } from './config.js';
-import { obtenerSesion, cerrarSesion, irALogin } from './auth.js';
+import { obtenerToken, cerrarSesion } from './auth.js';
 
 export class ApiError extends Error {
-  constructor(codigo, mensaje, campos = {}, status = 0) {
+  constructor(codigo, mensaje, campos = {}) {
     super(mensaje);
+    this.name = 'ApiError';
     this.codigo = codigo;
     this.campos = campos;
-    this.status = status;
   }
 }
 
 export async function api(ruta, { metodo = 'GET', datos, formData } = {}) {
+  const url = ruta.startsWith('http') ? ruta : `${API_URL}${ruta.startsWith('/') ? '' : '/'}${ruta}`;
   const headers = {};
-  const { token } = obtenerSesion();
-  if (token) headers.Authorization = `Bearer ${token}`;
 
-  let body;
+  const token = obtenerToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const opciones = {
+    method: metodo.toUpperCase(),
+    headers
+  };
+
   if (formData) {
-    body = formData; // el navegador pone el Content-Type multipart solo
+    opciones.body = formData;
   } else if (datos !== undefined) {
     headers['Content-Type'] = 'application/json';
-    body = JSON.stringify(datos);
+    opciones.body = JSON.stringify(datos);
   }
 
   let respuesta;
   try {
-    respuesta = await fetch(API_URL + ruta, { method: metodo, headers, body });
+    respuesta = await fetch(url, opciones);
   } catch {
-    throw new ApiError('ERROR_SERVIDOR', 'No se pudo conectar con el servidor');
+    throw new ApiError('ERROR_CONEXION', 'No se pudo conectar con el servidor.');
   }
 
-  let json;
-  try {
-    json = await respuesta.json();
-  } catch {
-    throw new ApiError('ERROR_SERVIDOR', `Respuesta inválida del servidor (${respuesta.status})`, {}, respuesta.status);
-  }
-
-  if (json.ok) return json.data;
-
-  const { codigo = 'ERROR_SERVIDOR', mensaje = 'Error desconocido', campos = {} } = json.error || {};
-  if (codigo === 'NO_AUTENTICADO') {
+  if (respuesta.status === 401) {
     cerrarSesion();
-    irALogin();
+    throw new ApiError('NO_AUTENTICADO', 'Tu sesión ha expirado. Ingresa de nuevo.');
   }
-  throw new ApiError(codigo, mensaje, campos, respuesta.status);
+
+  let resultado;
+  try {
+    resultado = await respuesta.json();
+  } catch {
+    throw new ApiError('ERROR_SERVIDOR', `Error interno del servidor (${respuesta.status}).`);
+  }
+
+  if (resultado.ok === true) {
+    return resultado.data;
+  }
+
+  const err = resultado.error || {};
+  throw new ApiError(
+    err.codigo || 'ERROR_SERVIDOR',
+    err.mensaje || 'Error al procesar la solicitud',
+    err.campos || {}
+  );
 }
