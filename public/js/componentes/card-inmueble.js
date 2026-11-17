@@ -1,38 +1,76 @@
-// Tarjeta de inmueble para el catálogo y el panel — dueño: Dev C
-// Recibe un elemento de items[] de GET /api/inmuebles (sección 5 del plan).
-import { formatearUSD, formatearPEN, formatearM2, etiqueta } from '../utils/formato.js';
+/**
+ * InmoPredict — Card de Inmueble con protección anti-XSS (.textContent)
+ * Dueño: Dev C (Frontend y UX)
+ */
+import { formatearUSD, formatearPEN, etiqueta } from '../utils/formato.js';
 
 export function crearCardInmueble(inmueble) {
-  const col = document.createElement('div');
-  col.className = 'col-12 col-sm-6 col-lg-4 col-xl-3';
-  col.innerHTML = `
-    <a class="card h-100 ip-card-inmueble text-decoration-none" href="/detalle.html?id=${Number(inmueble.id_inmueble)}">
-      <div class="ip-card-foto">
-        <img class="card-img-top" alt="" loading="lazy">
-        <span class="badge ip-badge-tipo"></span>
-      </div>
-      <div class="card-body">
-        <p class="ip-precio mb-0"></p>
-        <p class="ip-precio-pen small mb-2"></p>
-        <h3 class="h6 card-title ip-titulo"></h3>
-        <p class="small ip-ubicacion mb-2"><i class="bi bi-geo-alt"></i> <span></span></p>
-        <div class="d-flex gap-3 small ip-datos">
-          <span><i class="bi bi-rulers"></i> <span class="ip-m2"></span></span>
-          <span><i class="bi bi-door-closed"></i> <span class="ip-hab"></span></span>
-        </div>
-      </div>
-    </a>`;
+  const card = document.createElement('article');
+  card.className = 'card h-100 ip-card-inmueble border-0';
 
-  // textContent para todo lo que escribe el usuario (evita inyección de HTML)
-  const img = col.querySelector('img');
+  const boxFoto = document.createElement('div');
+  boxFoto.className = 'ip-card-foto';
+
+  const img = document.createElement('img');
   img.src = inmueble.foto_principal || '/img/sin-foto.svg';
+  img.alt = inmueble.titulo || 'Propiedad';
+  img.loading = 'lazy';
   img.onerror = () => { img.src = '/img/sin-foto.svg'; };
-  col.querySelector('.ip-badge-tipo').textContent = `${etiqueta(inmueble.tipo_inmueble)} · ${etiqueta(inmueble.zona)}`;
-  col.querySelector('.ip-precio').textContent = formatearUSD(inmueble.precio_venta_usd);
-  col.querySelector('.ip-precio-pen').textContent = formatearPEN(inmueble.precio_venta_usd);
-  col.querySelector('.ip-titulo').textContent = inmueble.titulo;
-  col.querySelector('.ip-ubicacion span').textContent = `${inmueble.distrito}, ${inmueble.provincia}`;
-  col.querySelector('.ip-m2').textContent = formatearM2(inmueble.superficie_m2);
-  col.querySelector('.ip-hab').textContent = `${inmueble.num_habitaciones} hab.`;
-  return col;
+  boxFoto.appendChild(img);
+
+  const badge = document.createElement('span');
+  badge.className = 'badge ip-badge-tipo text-uppercase';
+  const tipoTxt = etiqueta(inmueble.tipo_inmueble || 'Inmueble');
+  const zonaTxt = etiqueta(inmueble.zona || '');
+  badge.textContent = zonaTxt ? `${tipoTxt} · ${zonaTxt}` : tipoTxt;
+  boxFoto.appendChild(badge);
+
+  card.appendChild(boxFoto);
+
+  const body = document.createElement('div');
+  body.className = 'card-body p-3 d-flex flex-column';
+
+  const precioUsd = document.createElement('div');
+  precioUsd.className = 'ip-precio';
+  precioUsd.textContent = formatearUSD(inmueble.precio_venta_usd);
+  body.appendChild(precioUsd);
+
+  const precioPen = document.createElement('div');
+  precioPen.className = 'ip-precio-pen small mb-2';
+  precioPen.textContent = formatearPEN(inmueble.precio_venta_usd);
+  body.appendChild(precioPen);
+
+  const titulo = document.createElement('h2');
+  titulo.className = 'h6 card-title text-truncate mb-1';
+  titulo.textContent = inmueble.titulo || 'Sin título';
+  body.appendChild(titulo);
+
+  const ubicacion = document.createElement('p');
+  ubicacion.className = 'ip-ubicacion small mb-2 text-truncate';
+  const dist = inmueble.distrito || '';
+  const prov = inmueble.provincia || '';
+  ubicacion.textContent = dist && prov ? `📍 ${dist}, ${prov}` : (dist ? `📍 ${dist}` : '📍 Sin ubicación');
+  body.appendChild(ubicacion);
+
+  const datos = document.createElement('div');
+  datos.className = 'ip-datos small mt-auto pt-2 border-top d-flex justify-content-between';
+  
+  const m2 = document.createElement('span');
+  m2.textContent = `${inmueble.superficie_m2 || 0} m²`;
+  
+  const hab = document.createElement('span');
+  hab.textContent = `${inmueble.num_habitaciones || 0} hab.`;
+
+  datos.appendChild(m2);
+  datos.appendChild(hab);
+  body.appendChild(datos);
+
+  const link = document.createElement('a');
+  link.href = `/detalle.html?id=${inmueble.id_inmueble}`;
+  link.className = 'stretched-link';
+  link.setAttribute('aria-label', `Ver detalles de ${inmueble.titulo || 'propiedad'}`);
+  body.appendChild(link);
+
+  card.appendChild(body);
+  return card;
 }
