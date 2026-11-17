@@ -1,19 +1,53 @@
-// Botón para mostrar u ocultar contraseñas — dueño: Dev C
-// En el HTML: <button type="button" data-ver-password="id-del-input" aria-label="Mostrar contraseña"
-//               aria-pressed="false"><i class="bi bi-eye"></i></button>
-// En el JS de la página: activarVerPassword();
-export function activarVerPassword(raiz = document) {
-  raiz.querySelectorAll('[data-ver-password]').forEach((boton) => {
-    const input = document.getElementById(boton.dataset.verPassword);
-    if (!input) return;
-    boton.addEventListener('click', () => {
-      const mostrar = input.type === 'password';
-      input.type = mostrar ? 'text' : 'password';
-      boton.setAttribute('aria-pressed', String(mostrar));
-      boton.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
-      const icono = boton.querySelector('i');
-      icono?.classList.toggle('bi-eye', !mostrar);
-      icono?.classList.toggle('bi-eye-slash', mostrar);
+/**
+ * InmoPredict — Componente para ver/ocultar contraseñas
+ * Dueño: Dev C (Frontend y UX)
+ * Soporta accesibilidad (aria-label, aria-pressed) y data-ver-password
+ */
+
+export function configurarVerPassword() {
+  const botones = document.querySelectorAll('[data-ver-password]');
+
+  botones.forEach(btn => {
+    // Evitar agregar múltiples listeners si se llama más de una vez
+    if (btn.dataset.iniciado === 'true') return;
+    btn.dataset.iniciado = 'true';
+
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-ver-password');
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const icono = btn.querySelector('i');
+      const esPassword = input.type === 'password';
+
+      // Alternar tipo de input
+      input.type = esPassword ? 'text' : 'password';
+
+      // Accesibilidad
+      btn.setAttribute('aria-pressed', esPassword ? 'true' : 'false');
+      btn.setAttribute('aria-label', esPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+
+      // Alternar icono de ojo
+      if (icono) {
+        if (esPassword) {
+          icono.classList.remove('bi-eye');
+          icono.classList.add('bi-eye-slash');
+        } else {
+          icono.classList.remove('bi-eye-slash');
+          icono.classList.add('bi-eye');
+        }
+      }
     });
   });
+}
+
+// También lo exportamos con alias por si se usaba con otro nombre
+export const activarVerPassword = configurarVerPassword;
+export const inicializarVerPassword = configurarVerPassword;
+
+// Auto-inicializar si el documento ya cargó
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', configurarVerPassword);
+} else {
+  configurarVerPassword();
 }
