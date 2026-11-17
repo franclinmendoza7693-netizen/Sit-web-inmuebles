@@ -24,9 +24,7 @@ import { CASOS_ENUNCIADO } from '../modelo/casos-enunciado.js';
 
 const RUTA_CSV = '/admin/datos/inmuebles.csv';
 
-// Mientras estés en desarrollo puedes mantenerlo en false para probar directo
-const REQUIERE_ADMIN = false;
-if (!REQUIERE_ADMIN || protegerPagina({ rol: 'admin' })) renderNavbar();
+if (protegerPagina({ rol: 'admin' })) renderNavbar();
 
 // Estado compartido del entrenamiento y evaluación
 const estado = {
