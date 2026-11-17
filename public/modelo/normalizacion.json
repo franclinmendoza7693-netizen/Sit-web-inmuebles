@@ -1,0 +1,29 @@
+{
+  "version_modelo": "1.0.0",
+  "entradas": [
+    "superficie_m2",
+    "num_habitaciones",
+    "anio_construccion",
+    "zona_centro",
+    "zona_suburbio",
+    "zona_rural"
+  ],
+  "min": {
+    "superficie_m2": 40,
+    "num_habitaciones": 1,
+    "anio_construccion": 1970,
+    "precio_miles_usd": 72.2
+  },
+  "max": {
+    "superficie_m2": 398,
+    "num_habitaciones": 6,
+    "anio_construccion": 2025,
+    "precio_miles_usd": 1077
+  },
+  "metricas_test": {
+    "mse": 4377812954,
+    "mae_usd": 25912,
+    "rmse_usd": 66165,
+    "r2": 0.8641
+  }
+}
