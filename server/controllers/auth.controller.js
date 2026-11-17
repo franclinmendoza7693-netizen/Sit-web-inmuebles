@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { ok, creado, fallo, pendiente } from '../utils/respuesta.js';
+import { ok, creado, fallo } from '../utils/respuesta.js';
 import * as Usuario from '../models/usuario.model.js';
 
 const RONDAS_BCRYPT = 10;
@@ -56,7 +56,9 @@ export async function login(req, res) {
   return ok(res, { token, usuario: datos }, 'Sesión iniciada');
 }
 
-// GET /api/auth/perfil — día 2  → datos de req.usuario.id_usuario
+// GET /api/auth/perfil → datos de req.usuario.id_usuario
 export async function perfil(req, res) {
-  return pendiente(res);
+  const usuario = await Usuario.buscarPorId(req.usuario.id_usuario);
+  if (!usuario) return fallo(res, 404, 'NO_ENCONTRADO', 'La cuenta ya no existe');
+  return ok(res, usuario);
 }
