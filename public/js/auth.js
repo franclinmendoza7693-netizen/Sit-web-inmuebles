@@ -40,7 +40,7 @@ export function cerrarSesion(redir = '/login.html') {
   window.location.href = redir;
 }
 
-export function requiereAutenticacion(rolesPermitidos = []) {
+export function protegerPagina({ rol } = {}) {
   if (!estaAutenticado()) {
     const destino = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.href = `/login.html?redir=${destino}`;
@@ -48,7 +48,7 @@ export function requiereAutenticacion(rolesPermitidos = []) {
   }
 
   const usuario = obtenerUsuario();
-  if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario.rol)) {
+  if (rol && usuario.rol !== rol) {
     alert('No cuentas con permisos para entrar a esta sección.');
     window.location.href = '/index.html';
     return null;

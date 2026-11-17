@@ -4,7 +4,7 @@
  */
 import { estaAutenticado, obtenerUsuario, cerrarSesion } from '../auth.js';
 
-export function montarNavbar() {
+export function renderNavbar() {
   const contenedor = document.getElementById('navbar');
   if (!contenedor) return;
 
@@ -94,7 +94,7 @@ export function montarNavbar() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', montarNavbar);
+  document.addEventListener('DOMContentLoaded', renderNavbar);
 } else {
-  montarNavbar();
+  renderNavbar();
 }

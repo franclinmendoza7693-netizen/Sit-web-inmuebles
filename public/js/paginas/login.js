@@ -5,7 +5,7 @@
 import { REGEX } from '/shared/contrato.js';
 import { api, ApiError } from '../api.js';
 import { guardarSesion, estaAutenticado } from '../auth.js';
-import { configurarVerPassword } from '../componentes/ver-password.js';
+import { activarVerPassword } from '../componentes/ver-password.js';
 import { limpiarErrores, pintarErrores } from '../utils/formulario.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  configurarVerPassword();
+  activarVerPassword();
 
   const form = document.getElementById('form-login');
   const btnLogin = document.getElementById('btn-login');
