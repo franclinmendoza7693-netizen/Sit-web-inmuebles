@@ -1,42 +1,58 @@
-// Sesión del usuario en el navegador — dueño: Dev C
+/**
+ * InmoPredict — Módulo de Sesión y Autenticación Frontend
+ * Dueño: Dev C (Frontend y UX)
+ * Usa las constantes sagradas de shared/contrato.js
+ */
 import { STORAGE } from '/shared/contrato.js';
 
-export function obtenerSesion() {
-  try {
-    const token = localStorage.getItem(STORAGE.TOKEN);
-    const usuario = JSON.parse(localStorage.getItem(STORAGE.USUARIO) || 'null');
-    return { token, usuario };
-  } catch {
-    return { token: null, usuario: null };
+export function guardarSesion({ token, usuario }) {
+  if (token) {
+    localStorage.setItem(STORAGE.TOKEN, token);
+  }
+  if (usuario) {
+    localStorage.setItem(STORAGE.USUARIO, JSON.stringify(usuario));
   }
 }
 
-// Se llama después de un login exitoso con lo que devuelve POST /api/auth/login
-export function guardarSesion({ token, usuario }) {
-  localStorage.setItem(STORAGE.TOKEN, token);
-  localStorage.setItem(STORAGE.USUARIO, JSON.stringify(usuario));
+export function obtenerToken() {
+  return localStorage.getItem(STORAGE.TOKEN);
 }
 
-export function cerrarSesion() {
+export function obtenerUsuario() {
+  const data = localStorage.getItem(STORAGE.USUARIO);
+  if (!data) return null;
+  try {
+    return JSON.parse(data);
+  } catch {
+    cerrarSesion();
+    return null;
+  }
+}
+
+export function estaAutenticado() {
+  return Boolean(obtenerToken() && obtenerUsuario());
+}
+
+export function cerrarSesion(redir = '/login.html') {
   localStorage.removeItem(STORAGE.TOKEN);
   localStorage.removeItem(STORAGE.USUARIO);
+  localStorage.removeItem(STORAGE.PREDICCION_PENDIENTE);
+  window.location.href = redir;
 }
 
-export function irALogin() {
-  const volver = encodeURIComponent(location.pathname + location.search);
-  location.href = `/login.html?volver=${volver}`;
-}
+export function requiereAutenticacion(rolesPermitidos = []) {
+  if (!estaAutenticado()) {
+    const destino = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/login.html?redir=${destino}`;
+    return null;
+  }
 
-// Al inicio de una página privada: protegerPagina()  |  solo admin: protegerPagina({ rol: 'admin' })
-export function protegerPagina({ rol } = {}) {
-  const { token, usuario } = obtenerSesion();
-  if (!token || !usuario) {
-    irALogin();
+  const usuario = obtenerUsuario();
+  if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario.rol)) {
+    alert('No cuentas con permisos para entrar a esta sección.');
+    window.location.href = '/index.html';
     return null;
   }
-  if (rol && usuario.rol !== rol) {
-    location.href = '/index.html';
-    return null;
-  }
+
   return usuario;
 }
