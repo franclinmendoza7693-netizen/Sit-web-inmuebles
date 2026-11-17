@@ -4,7 +4,7 @@
  * Soporta accesibilidad (aria-label, aria-pressed) y data-ver-password
  */
 
-export function configurarVerPassword() {
+export function activarVerPassword() {
   const botones = document.querySelectorAll('[data-ver-password]');
 
   botones.forEach(btn => {
@@ -41,13 +41,9 @@ export function configurarVerPassword() {
   });
 }
 
-// También lo exportamos con alias por si se usaba con otro nombre
-export const activarVerPassword = configurarVerPassword;
-export const inicializarVerPassword = configurarVerPassword;
-
 // Auto-inicializar si el documento ya cargó
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', configurarVerPassword);
+  document.addEventListener('DOMContentLoaded', activarVerPassword);
 } else {
-  configurarVerPassword();
+  activarVerPassword();
 }
