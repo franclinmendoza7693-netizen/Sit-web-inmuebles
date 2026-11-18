@@ -1,4 +1,4 @@
-// Sobre único de respuesta de la API (sección 5 del plan) — dueño: Dev A
+// Sobre único de respuesta de la API (sección 5 del plan)
 //   Éxito: { ok: true,  data, mensaje }
 //   Error: { ok: false, error: { codigo, mensaje, campos } }
 
@@ -26,7 +26,3 @@ export class ApiError extends Error {
   }
 }
 
-// Respuesta temporal mientras un endpoint no está hecho. Borrar cuando todos existan.
-export function pendiente(res, quien = 'Dev A') {
-  return fallo(res, 501, 'ERROR_SERVIDOR', `Endpoint pendiente de implementar (${quien})`);
-}

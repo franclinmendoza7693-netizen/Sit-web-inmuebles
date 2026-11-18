@@ -1,4 +1,4 @@
-// Subida de fotos con multer — dueño: Dev A (día 3)
+// Subida de fotos con multer
 // Uso: router.post('/', verificarToken, subirFotos, …)  → archivos en req.files
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -8,7 +8,7 @@ import { LIMITES } from '../../shared/contrato.js';
 import { ApiError } from '../utils/respuesta.js';
 
 const EXTENSIONES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
-const DESTINO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../uploads/inmuebles');
+const DESTINO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../uploads/inmuebles');
 
 const almacenamiento = multer.diskStorage({
   destination: DESTINO, // la ruta pública será /uploads/inmuebles/<archivo>
