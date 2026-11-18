@@ -1,4 +1,4 @@
-// Pool de conexiones a MariaDB (XAMPP) / MySQL — dueño: Dev A
+// Pool de conexiones a MariaDB (XAMPP) / MySQL
 // mysql2 funciona igual con ambos motores.
 import mysql from 'mysql2/promise';
 

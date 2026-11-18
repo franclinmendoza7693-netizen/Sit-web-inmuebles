@@ -1,4 +1,4 @@
-// Acceso a la tabla usuarios — dueño: Dev A
+// Acceso a la tabla usuarios
 // Solo consultas parametrizadas con pool.execute(sql, [valores]).
 import { pool } from '../config/db.js';
 
