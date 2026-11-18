@@ -4,7 +4,7 @@ node_modules/
 # Variables de entorno (nunca se suben)
 .env
 
-# Fotos subidas por los usuarios
+# Fotos subidas por los usuarios (server/uploads/)
 uploads/
 
 # Logs y sistema
@@ -12,5 +12,8 @@ uploads/
 npm-debug.log*
 .DS_Store
 Thumbs.db
-.vscode/*
-!.vscode/extensions.json
+.vscode/
+
+# Material interno del equipo (se queda en cada PC)
+docs/
+CLAUDE.md
