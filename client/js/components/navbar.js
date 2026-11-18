@@ -1,6 +1,7 @@
 /**
  * InmoPredict — Navbar dinámico según rol y sesión
  */
+import { ROL_ADMIN } from '/shared/contrato.js';
 import { estaAutenticado, obtenerUsuario, cerrarSesion } from '../auth.js';
 
 export function renderNavbar() {
@@ -9,6 +10,7 @@ export function renderNavbar() {
 
   const autenticado = estaAutenticado();
   const usuario = autenticado ? obtenerUsuario() : null;
+  const esAdmin = usuario?.rol === ROL_ADMIN;
   const path = window.location.pathname;
 
   const nav = document.createElement('nav');
@@ -45,6 +47,12 @@ export function renderNavbar() {
               <a class="nav-link ${path.includes('/panel.html') ? 'active fw-semibold' : ''}" 
                  href="/panel.html">Mi panel</a>
             </li>
+            ${esAdmin ? `
+              <li class="nav-item">
+                <a class="nav-link ${path.includes('/admin/entrenamiento.html') ? 'active fw-semibold' : ''}"
+                   href="/admin/entrenamiento.html">Entrenar modelo</a>
+              </li>
+            ` : ''}
           ` : ''}
         </ul>
 
