@@ -1,5 +1,10 @@
 // Subida de fotos con multer
+<<<<<<< HEAD
 // Uso: router.post('/', verificarToken, subirFotos, …)  → archivos en req.files
+=======
+// Uso: router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, …)  → archivos en req.files
+import fs from 'node:fs/promises';
+>>>>>>> developer
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -26,3 +31,15 @@ export const subirFotos = multer({
     return cb(new ApiError(400, 'VALIDACION', 'Formato de foto no permitido', { fotos: 'Solo JPG, PNG o WebP' }));
   },
 }).array('fotos', LIMITES.fotos.max); // el input se llama name="fotos"
+
+// multer guarda las fotos antes de que se validen los demás campos. Si la petición termina con error
+// (datos inválidos, fallo al guardar en la base), esas fotos quedarían huérfanas en el disco: se borran.
+export function borrarFotosSiFalla(req, res, next) {
+  res.on('finish', () => {
+    if (res.statusCode < 400) return;
+    for (const foto of req.files ?? []) {
+      fs.unlink(foto.path).catch(() => {}); // si ya no existe, no hay nada que borrar
+    }
+  });
+  next();
+}
