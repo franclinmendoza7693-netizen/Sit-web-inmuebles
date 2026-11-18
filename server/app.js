@@ -12,6 +12,7 @@ import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
 import authRoutes from './routes/auth.routes.js';
 import inmueblesRoutes from './routes/inmuebles.routes.js';
+import prediccionesRoutes from './routes/predicciones.routes.js';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UPLOADS = path.join(RAIZ, 'server', 'uploads');
@@ -38,6 +39,7 @@ app.get('/api/salud', async (req, res) => {
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/inmuebles', inmueblesRoutes);
+app.use('/api/predicciones', prediccionesRoutes);
 
 // ---------- Errores (siempre al final) ----------
 app.use('/api', noEncontrado);
