@@ -9,7 +9,7 @@
 // =====================================================================
 import { renderNavbar } from '../components/navbar.js';
 import { protegerPagina } from '../auth.js';
-import { ENTRADAS_MODELO, ETIQUETAS } from '/shared/contrato.js';
+import { ENTRADAS_MODELO, ETIQUETAS, ROL_ADMIN } from '/shared/contrato.js';
 import {
   COLUMNAS_NUMERICAS,
   OBJETIVO,
@@ -24,7 +24,7 @@ import { CASOS_ENUNCIADO } from '../ml/casos-enunciado.js';
 
 const RUTA_CSV = '/assets/data/inmuebles.csv';
 
-if (protegerPagina({ rol: 'admin' })) renderNavbar();
+if (protegerPagina({ rol: ROL_ADMIN })) renderNavbar();
 
 // Estado compartido del entrenamiento y evaluación
 const estado = {
