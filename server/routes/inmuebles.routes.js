@@ -2,6 +2,12 @@ import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import { LIMITES, ORDENES, TIPOS_INMUEBLE, ZONAS } from '../../shared/contrato.js';
 import { verificarToken } from '../middlewares/auth.js';
+import {
+  entre,
+  reglasCaracteristicas,
+  reglaPrecioEstimado,
+  reglaVersionModelo,
+} from '../middlewares/reglas-inmueble.js';
 import { borrarFotosSiFalla, subirFotos } from '../middlewares/subida.js';
 import { validar } from '../middlewares/validar.js';
 import { crear, detalle, listar } from '../controllers/inmuebles.controller.js';
@@ -58,9 +64,7 @@ const reglasDetalle = [
 ];
 
 const DESCRIPCION_MAX = 2000;
-const PRECIO_ESTIMADO_MAX = 9_999_999_999; // lo que cabe en la columna DECIMAL(12,2)
 
-const entre = ({ min, max }) => `Debe estar entre ${min} y ${max}`;
 const textoObligatorio = (campo, max) =>
   body(campo)
     .trim()
@@ -76,40 +80,22 @@ const textoOpcional = (campo, max) =>
 const reglasPublicar = [
   textoObligatorio('titulo', 120),
   textoOpcional('descripcion', DESCRIPCION_MAX),
-  body('tipo_inmueble').isIn(TIPOS_INMUEBLE).withMessage(`Debe ser uno de: ${TIPOS_INMUEBLE.join(', ')}`),
-  body('zona').isIn(ZONAS).withMessage(`Debe ser una de: ${ZONAS.join(', ')}`),
+  body('tipo_inmueble')
+    .isIn(TIPOS_INMUEBLE)
+    .withMessage(`Debe ser uno de: ${TIPOS_INMUEBLE.join(', ')}`),
   textoObligatorio('region', 60),
   textoObligatorio('provincia', 60),
   textoObligatorio('distrito', 60),
   textoOpcional('direccion', 150),
-  body('superficie_m2')
-    .isFloat(LIMITES.superficie_m2)
-    .withMessage(entre(LIMITES.superficie_m2))
-    .bail()
-    .toFloat(),
-  body('num_habitaciones')
-    .isInt(LIMITES.num_habitaciones)
-    .withMessage(entre(LIMITES.num_habitaciones))
-    .bail()
-    .toInt(),
-  body('anio_construccion')
-    .isInt(LIMITES.anio_construccion)
-    .withMessage(entre(LIMITES.anio_construccion))
-    .bail()
-    .toInt(),
+  ...reglasCaracteristicas,
   body('precio_venta_usd')
     .isFloat(LIMITES.precio_venta_usd)
     .withMessage(entre(LIMITES.precio_venta_usd))
     .bail()
     .toFloat(),
-  // Vienen de la predicción del modelo; son opcionales porque se puede publicar sin predecir
-  body('precio_estimado_usd')
-    .optional(opcional)
-    .isFloat({ min: 0, max: PRECIO_ESTIMADO_MAX })
-    .withMessage('Debe ser un número mayor o igual a 0')
-    .bail()
-    .toFloat(),
-  textoOpcional('version_modelo', 10),
+  // Vienen de la predicción del modelo
+  reglaPrecioEstimado({ obligatorio: false }),
+  reglaVersionModelo({ obligatorio: false }),
 ];
 
 router.get('/', reglasListado, validar, listar);
