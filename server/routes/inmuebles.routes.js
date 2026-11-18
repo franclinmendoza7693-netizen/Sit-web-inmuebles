@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { param, query } from 'express-validator';
-import { ORDENES, TIPOS_INMUEBLE, ZONAS } from '../../shared/contrato.js';
+import { body, param, query } from 'express-validator';
+import { LIMITES, ORDENES, TIPOS_INMUEBLE, ZONAS } from '../../shared/contrato.js';
+import { verificarToken } from '../middlewares/auth.js';
+import { borrarFotosSiFalla, subirFotos } from '../middlewares/subida.js';
 import { validar } from '../middlewares/validar.js';
-import { detalle, listar } from '../controllers/inmuebles.controller.js';
+import { crear, detalle, listar } from '../controllers/inmuebles.controller.js';
 
 const router = Router();
 
@@ -55,7 +57,64 @@ const reglasDetalle = [
   param('id_inmueble').isInt({ min: 1 }).withMessage('Debe ser un entero positivo').bail().toInt(),
 ];
 
+const DESCRIPCION_MAX = 2000;
+const PRECIO_ESTIMADO_MAX = 9_999_999_999; // lo que cabe en la columna DECIMAL(12,2)
+
+const entre = ({ min, max }) => `Debe estar entre ${min} y ${max}`;
+const textoObligatorio = (campo, max) =>
+  body(campo)
+    .trim()
+    .notEmpty()
+    .withMessage('Este dato es obligatorio')
+    .bail()
+    .isLength({ max })
+    .withMessage(`Máximo ${max} caracteres`);
+const textoOpcional = (campo, max) =>
+  body(campo).optional(opcional).trim().isLength({ max }).withMessage(`Máximo ${max} caracteres`);
+
+// Los campos llegan como texto (multipart/form-data): los números se validan y se convierten aquí
+const reglasPublicar = [
+  textoObligatorio('titulo', 120),
+  textoOpcional('descripcion', DESCRIPCION_MAX),
+  body('tipo_inmueble').isIn(TIPOS_INMUEBLE).withMessage(`Debe ser uno de: ${TIPOS_INMUEBLE.join(', ')}`),
+  body('zona').isIn(ZONAS).withMessage(`Debe ser una de: ${ZONAS.join(', ')}`),
+  textoObligatorio('region', 60),
+  textoObligatorio('provincia', 60),
+  textoObligatorio('distrito', 60),
+  textoOpcional('direccion', 150),
+  body('superficie_m2')
+    .isFloat(LIMITES.superficie_m2)
+    .withMessage(entre(LIMITES.superficie_m2))
+    .bail()
+    .toFloat(),
+  body('num_habitaciones')
+    .isInt(LIMITES.num_habitaciones)
+    .withMessage(entre(LIMITES.num_habitaciones))
+    .bail()
+    .toInt(),
+  body('anio_construccion')
+    .isInt(LIMITES.anio_construccion)
+    .withMessage(entre(LIMITES.anio_construccion))
+    .bail()
+    .toInt(),
+  body('precio_venta_usd')
+    .isFloat(LIMITES.precio_venta_usd)
+    .withMessage(entre(LIMITES.precio_venta_usd))
+    .bail()
+    .toFloat(),
+  // Vienen de la predicción del modelo; son opcionales porque se puede publicar sin predecir
+  body('precio_estimado_usd')
+    .optional(opcional)
+    .isFloat({ min: 0, max: PRECIO_ESTIMADO_MAX })
+    .withMessage('Debe ser un número mayor o igual a 0')
+    .bail()
+    .toFloat(),
+  textoOpcional('version_modelo', 10),
+];
+
 router.get('/', reglasListado, validar, listar);
+// Orden: token → fotos → reglas. Si algo falla después de subir las fotos, se borran del disco
+router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, reglasPublicar, validar, crear);
 router.get('/:id_inmueble', reglasDetalle, validar, detalle);
 
 export default router;

@@ -1,6 +1,6 @@
 import { matchedData } from 'express-validator';
 import { POR_PAGINA } from '../../shared/contrato.js';
-import { ApiError, ok } from '../utils/respuesta.js';
+import { ApiError, creado, ok } from '../utils/respuesta.js';
 import * as Inmueble from '../models/inmueble.model.js';
 
 // GET /api/inmuebles
@@ -16,6 +16,21 @@ export async function listar(req, res) {
     porPagina: POR_PAGINA,
   });
   return ok(res, { items, pagina, por_pagina: POR_PAGINA, total });
+}
+
+// POST /api/inmuebles (multipart/form-data)
+// matchedData deja pasar solo los campos validados: lo que mande el cliente fuera de la lista
+// (estado, id_usuario…) se ignora. El dueño sale siempre del token.
+export async function crear(req, res) {
+  const datos = matchedData(req, { locations: ['body'] });
+  const rutasFotos = (req.files ?? []).map((foto) => `/uploads/inmuebles/${foto.filename}`);
+
+  const id_inmueble = await Inmueble.crear(
+    { ...datos, id_usuario: req.usuario.id_usuario },
+    rutasFotos,
+  );
+  const inmueble = await Inmueble.buscarPublicadoPorId(id_inmueble);
+  return creado(res, inmueble, 'Inmueble publicado');
 }
 
 // GET /api/inmuebles/:id_inmueble

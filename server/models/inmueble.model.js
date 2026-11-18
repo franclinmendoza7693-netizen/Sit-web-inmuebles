@@ -64,6 +64,54 @@ export async function listarPublicados({ filtros, orden, pagina, porPagina }) {
   return { items, total };
 }
 
+// Guarda el inmueble y sus fotos en una sola transacción: se guardan las dos cosas o ninguna.
+// Devuelve el id del inmueble creado. rutasFotos va en orden: la primera es la foto principal.
+export async function crear(datos, rutasFotos) {
+  const conexion = await pool.getConnection();
+  try {
+    await conexion.beginTransaction();
+    const [resultado] = await conexion.execute(
+      `INSERT INTO inmuebles (id_usuario, titulo, descripcion, tipo_inmueble, zona, region,
+                              provincia, distrito, direccion, superficie_m2, num_habitaciones,
+                              anio_construccion, precio_estimado_usd, precio_venta_usd,
+                              version_modelo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        datos.id_usuario,
+        datos.titulo,
+        datos.descripcion ?? null,
+        datos.tipo_inmueble,
+        datos.zona,
+        datos.region,
+        datos.provincia,
+        datos.distrito,
+        datos.direccion ?? null,
+        datos.superficie_m2,
+        datos.num_habitaciones,
+        datos.anio_construccion,
+        datos.precio_estimado_usd ?? null,
+        datos.precio_venta_usd,
+        datos.version_modelo ?? null,
+      ],
+    );
+    const id_inmueble = resultado.insertId;
+
+    for (const [indice, ruta] of rutasFotos.entries()) {
+      await conexion.execute(
+        'INSERT INTO fotos_inmueble (id_inmueble, ruta, orden) VALUES (?, ?, ?)',
+        [id_inmueble, ruta, indice + 1],
+      );
+    }
+    await conexion.commit();
+    return id_inmueble;
+  } catch (err) {
+    await conexion.rollback();
+    throw err;
+  } finally {
+    conexion.release();
+  }
+}
+
 // Devuelve el inmueble publicado con sus fotos y el contacto del dueño, o null si no existe.
 // Del dueño solo salen nombres y teléfono: nunca dni, email ni password_hash.
 export async function buscarPublicadoPorId(id_inmueble) {
