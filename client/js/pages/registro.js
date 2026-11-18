@@ -1,12 +1,14 @@
 /**
  * InmoPredict — Página de Registro de Propietarios
  */
-import '../components/navbar.js';
+import { renderNavbar } from '../components/navbar.js';
 import { REGEX } from '/shared/contrato.js';
 import { api, ApiError } from '../api.js';
 import { guardarSesion, estaAutenticado } from '../auth.js';
 import { activarVerPassword } from '../components/ver-password.js';
 import { limpiarErrores, pintarErrores } from '../utils/formulario.js';
+
+renderNavbar();
 
 document.addEventListener('DOMContentLoaded', () => {
   if (estaAutenticado()) {

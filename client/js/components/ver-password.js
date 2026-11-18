@@ -39,10 +39,3 @@ export function activarVerPassword() {
     });
   });
 }
-
-// Auto-inicializar si el documento ya cargó
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', activarVerPassword);
-} else {
-  activarVerPassword();
-}

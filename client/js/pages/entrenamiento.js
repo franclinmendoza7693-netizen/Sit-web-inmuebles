@@ -154,6 +154,7 @@ async function entrenarModelo() {
   let mejorPerdida = Infinity;
   let paciencia = 15;
   let conteoSinMejora = 0;
+  let epocaDeParada = null;
 
   const controlParada = {
     onEpochEnd: async (epoch, logs) => {
@@ -163,7 +164,7 @@ async function entrenarModelo() {
       } else {
         conteoSinMejora++;
         if (conteoSinMejora >= paciencia) {
-          console.log(`Parada temprana en época ${epoch + 1}: val_loss dejó de mejorar.`);
+          epocaDeParada = epoch + 1;
           red.stopTraining = true;
         }
       }
@@ -180,7 +181,10 @@ async function entrenarModelo() {
     });
 
     estado.modelo = red;
-    txtEstado.textContent = '✔ Red Neuronal entrenada. Procede al Paso 3: Evaluar.';
+    const avisoParada = epocaDeParada
+      ? ` Parada temprana en la época ${epocaDeParada}: val_loss dejó de mejorar.`
+      : '';
+    txtEstado.textContent = `✔ Red Neuronal entrenada.${avisoParada} Procede al Paso 3: Evaluar.`;
     $('btn-evaluar').disabled = false;
   } catch (err) {
     txtEstado.textContent = `✖ Error al entrenar: ${err.message}`;

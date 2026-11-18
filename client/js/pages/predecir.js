@@ -6,7 +6,6 @@ import { predecirPrecio } from '../ml/prediccion.js';
 import { formatearUSD, formatearPEN } from '../utils/formato.js';
 import { leerFormulario } from '../utils/formulario.js';
 import { STORAGE } from '/shared/contrato.js';
-// import { api } from '../api.js';
 
 if (protegerPagina()) renderNavbar();
 
@@ -31,8 +30,7 @@ form.addEventListener('submit', async (e) => {
   document.getElementById('aviso-fuera-rango').hidden = !r.fuera_de_rango;
   resultado.hidden = false;
 
-  // TODO: guardar la consulta en el historial
-  // await api('/predicciones', { metodo: 'POST', datos: { ...datos, precio_estimado_usd: r.precio_estimado_usd, version_modelo: r.version_modelo } });
+  // TODO: guardar la consulta en el historial con POST /api/predicciones
 });
 
 // Lleva los datos a publicar.html (sección 7.1: btn-ir-publicar + sessionStorage ip_prediccion)
@@ -42,4 +40,4 @@ document.getElementById('btn-ir-publicar').addEventListener('click', () => {
   location.href = '/publicar.html';
 });
 
-// TODO: listar el historial en #historial-predicciones con api('/predicciones/mias')
+// TODO: listar el historial en #historial-predicciones con GET /api/predicciones/mias

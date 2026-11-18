@@ -1,20 +1,12 @@
 // Publicar inmueble (publicar.html)
 import { renderNavbar } from '../components/navbar.js';
 import { protegerPagina } from '../auth.js';
-// import { api } from '../api.js';
-// import { predecirPrecio } from '../ml/prediccion.js';
-// import { pintarErrores } from '../utils/formulario.js';
-// import { formatearUSD } from '../utils/formato.js';
-// import { STORAGE, LIMITES } from '/shared/contrato.js';
 
 if (protegerPagina()) renderNavbar();
 
-// TODO:
-// 1. Si existe sessionStorage[STORAGE.PREDICCION_PENDIENTE], rellenar el formulario
-//    (superficie_m2, num_habitaciones, zona, anio_construccion) y los ocultos
-//    precio_estimado_usd y version_modelo.
-// 2. Si no existe, calcular la predicción al cambiar esos 4 campos.
-// 3. #comparativa-precio: precio pedido vs. estimado; alerta si difieren más de 20 %.
-// 4. #input-fotos: validar con LIMITES.fotos y mostrar miniaturas en #preview-fotos.
-// 5. Enviar: const formData = new FormData(form); await api('/inmuebles', { metodo: 'POST', formData })
-// 6. Éxito → borrar ip_prediccion de sessionStorage y redirigir a /panel.html.
+// TODO: rellenar el formulario con la predicción guardada en sessionStorage (superficie_m2,
+// num_habitaciones, zona, anio_construccion, precio_estimado_usd y version_modelo) o, si no
+// hay, calcularla al cambiar esos 4 campos; comparar precio pedido vs. estimado en
+// #comparativa-precio (alerta si difieren más de 20 %); validar las fotos con LIMITES.fotos y
+// mostrar miniaturas en #preview-fotos; enviar con POST /api/inmuebles (FormData) y, al éxito,
+// borrar la predicción guardada y redirigir a /panel.html.

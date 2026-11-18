@@ -1,12 +1,9 @@
 // Detalle de un inmueble (detalle.html?id=12)
 import { renderNavbar } from '../components/navbar.js';
-// import { api } from '../api.js';
-// import { formatearUSD, formatearPEN, formatearM2, etiqueta } from '../utils/formato.js';
 
 renderNavbar();
 
-// TODO:
-// 1. const id = new URLSearchParams(location.search).get('id')
-// 2. const inmueble = await api(`/inmuebles/${id}`)   → incluye fotos[] y contacto { nombres, telefono }
-// 3. Galería (carousel de Bootstrap), precio USD y S/, datos, descripción y botón de contacto.
-// 4. Si la API responde NO_ENCONTRADO → mensaje amable y enlace al catálogo.
+// TODO: leer el id de la URL, pedir el inmueble a GET /api/inmuebles/:id_inmueble (incluye
+// fotos y contacto) y mostrar galería (carousel de Bootstrap), precio en USD y S/, datos,
+// descripción y botón de contacto. Si la API responde NO_ENCONTRADO, mostrar un mensaje
+// amable con enlace al catálogo.
