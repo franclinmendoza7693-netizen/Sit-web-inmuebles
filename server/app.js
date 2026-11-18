@@ -11,11 +11,8 @@ import { ping } from './config/db.js';
 import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
 import authRoutes from './routes/auth.routes.js';
-<<<<<<< HEAD
-=======
 import inmueblesRoutes from './routes/inmuebles.routes.js';
 import prediccionesRoutes from './routes/predicciones.routes.js';
->>>>>>> developer
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UPLOADS = path.join(RAIZ, 'server', 'uploads');
@@ -41,11 +38,8 @@ app.get('/api/salud', async (req, res) => {
   ok(res, { estado: 'ok', bd: (await ping()) ? 'conectada' : 'sin conexión' });
 });
 app.use('/api/auth', authRoutes);
-<<<<<<< HEAD
-=======
 app.use('/api/inmuebles', inmueblesRoutes);
 app.use('/api/predicciones', prediccionesRoutes);
->>>>>>> developer
 
 // ---------- Errores (siempre al final) ----------
 app.use('/api', noEncontrado);

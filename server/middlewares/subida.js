@@ -1,10 +1,6 @@
 // Subida de fotos con multer
-<<<<<<< HEAD
-// Uso: router.post('/', verificarToken, subirFotos, …)  → archivos en req.files
-=======
 // Uso: router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, …)  → archivos en req.files
 import fs from 'node:fs/promises';
->>>>>>> developer
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';

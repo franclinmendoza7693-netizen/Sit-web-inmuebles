@@ -1,8 +1,5 @@
 // Manejo uniforme de errores
-<<<<<<< HEAD
-=======
 import { LIMITES } from '../../shared/contrato.js';
->>>>>>> developer
 import { ApiError, fallo } from '../utils/respuesta.js';
 
 // Errores que lanza multer, escritos para quien sube las fotos

@@ -104,14 +104,11 @@ Todas las respuestas tienen la forma `{ ok, data, mensaje }` o `{ ok: false, err
 | POST | `/api/auth/registro` | Público | Registro de propietario con DNI y contraseña |
 | POST | `/api/auth/login` | Público | Inicio de sesión; devuelve un token JWT |
 | GET | `/api/auth/perfil` | Token | Datos del usuario autenticado |
-<<<<<<< HEAD
-=======
 | GET | `/api/inmuebles` | Público | Catálogo de inmuebles publicados. Filtros opcionales: `tipo_inmueble`, `zona`, `distrito`, `precio_min`, `precio_max`; `orden` (`recientes`, `precio_asc`, `precio_desc`) y `pagina`. Devuelve `items`, `pagina`, `por_pagina` y `total` |
 | GET | `/api/inmuebles/:id_inmueble` | Público | Detalle de un inmueble publicado, con sus fotos y el contacto del propietario |
 | POST | `/api/inmuebles` | Token | Publica un inmueble. Se envía como `multipart/form-data`, con los datos del inmueble y hasta 5 fotos (JPG, PNG o WebP de máximo 2 MB) en el campo `fotos` |
 | POST | `/api/predicciones` | Token | Guarda una consulta de precio: `superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_estimado_usd` y `version_modelo`. Devuelve `id_prediccion` |
 | GET | `/api/predicciones/mias` | Token | Consultas del usuario autenticado, las más recientes primero |
->>>>>>> developer
 
 ## Usuarios de prueba
 
