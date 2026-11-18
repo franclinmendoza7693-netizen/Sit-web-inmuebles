@@ -1,4 +1,4 @@
-// Manejo uniforme de errores — dueño: Dev A
+// Manejo uniforme de errores
 import { ApiError, fallo } from '../utils/respuesta.js';
 
 export function noEncontrado(req, res) {

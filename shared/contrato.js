@@ -17,7 +17,9 @@ export const VERSION_CONTRATO = '1.0.0';
 export const ZONAS = ['centro', 'suburbio', 'rural'];
 export const TIPOS_INMUEBLE = ['casa', 'departamento'];
 export const ESTADOS_INMUEBLE = ['publicado', 'pausado', 'vendido'];
-export const ROLES = ['propietario', 'admin'];
+export const ROL_PROPIETARIO = 'propietario';
+export const ROL_ADMIN = 'admin';
+export const ROLES = [ROL_PROPIETARIO, ROL_ADMIN];
 export const ORDENES = ['recientes', 'precio_asc', 'precio_desc'];
 
 // Texto bonito para mostrar en pantalla
