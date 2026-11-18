@@ -91,9 +91,3 @@ export function renderNavbar() {
     }
   }
 }
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderNavbar);
-} else {
-  renderNavbar();
-}

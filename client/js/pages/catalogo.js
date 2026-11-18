@@ -1,9 +1,11 @@
 /**
  * InmoPredict — Catálogo y Filtros Reactivos
  */
-import '../components/navbar.js';
+import { renderNavbar } from '../components/navbar.js';
 import { api } from '../api.js';
 import { crearCardInmueble } from '../components/card-inmueble.js';
+
+renderNavbar();
 
 let timerDebounce = null;
 
