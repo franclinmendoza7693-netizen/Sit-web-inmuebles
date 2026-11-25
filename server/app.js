@@ -11,6 +11,7 @@ import { ping } from './config/db.js';
 import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
 import authRoutes from './routes/auth.routes.js';
+import datasetRoutes from './routes/dataset.routes.js';
 import inmueblesRoutes from './routes/inmuebles.routes.js';
 import prediccionesRoutes from './routes/predicciones.routes.js';
 
@@ -40,6 +41,7 @@ app.get('/api/salud', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/inmuebles', inmueblesRoutes);
 app.use('/api/predicciones', prediccionesRoutes);
+app.use('/api/dataset', datasetRoutes);
 
 // ---------- Errores (siempre al final) ----------
 app.use('/api', noEncontrado);

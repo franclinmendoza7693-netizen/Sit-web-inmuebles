@@ -94,6 +94,16 @@ export async function actualizarEstado(id_inmueble, estado) {
   ]);
 }
 
+// Los datos del catálogo con los que se reentrena el modelo: las 4 entradas y el precio pedido
+export async function listarParaEntrenamiento() {
+  const [filas] = await pool.execute(
+    `SELECT superficie_m2, num_habitaciones, zona, anio_construccion, precio_venta_usd
+       FROM inmuebles
+      ORDER BY id_inmueble`,
+  );
+  return filas;
+}
+
 // Guarda el inmueble y sus fotos en una sola transacción: se guardan las dos cosas o ninguna.
 // Devuelve el id del inmueble creado. rutasFotos va en orden: la primera es la foto principal.
 export async function crear(datos, rutasFotos) {

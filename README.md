@@ -111,6 +111,7 @@ Todas las respuestas tienen la forma `{ ok, data, mensaje }` o `{ ok: false, err
 | PATCH | `/api/inmuebles/:id_inmueble/estado` | Dueño | Cambia el `estado` (`publicado`, `pausado` o `vendido`). Devuelve `id_inmueble` y `estado` |
 | POST | `/api/predicciones` | Token | Guarda una consulta de precio: `superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_estimado_usd` y `version_modelo`. Devuelve `id_prediccion` |
 | GET | `/api/predicciones/mias` | Token | Consultas del usuario autenticado, las más recientes primero |
+| GET | `/api/dataset/entrenamiento` | Admin | Filas del catálogo (`superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_venta_usd`) para reentrenar el modelo |
 
 ## Usuarios de prueba
 
