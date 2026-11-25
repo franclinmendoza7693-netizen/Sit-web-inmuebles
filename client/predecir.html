@@ -52,9 +52,11 @@
           <p id="resultado-precio-pen" class="h5 text-secondary"></p>
           <p id="resultado-rango" class="small text-secondary mb-3"></p>
           
-          <div id="aviso-fuera-rango" class="alert alert-warning small d-flex align-items-center gap-2" hidden>
-            <i class="bi bi-exclamation-triangle-fill flex-shrink-0" aria-hidden="true"></i>
-            <div>Los datos están fuera del rango usual del modelo: la estimación es menos confiable.</div>
+          <div id="aviso-fuera-rango" class="alert alert-warning small" hidden>
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle-fill flex-shrink-0" aria-hidden="true"></i>
+              <div>Los datos están fuera del rango usual del modelo: la estimación es menos confiable.</div>
+            </div>
           </div>
           
           <button class="btn btn-outline-primary w-100 py-2" id="btn-ir-publicar" type="button">
