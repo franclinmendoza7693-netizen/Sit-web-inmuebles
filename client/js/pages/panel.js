@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     try {
-      const items = await api('/inmuebles/mios');
+      const { items } = await api('/inmuebles/mios');
       contadorInmuebles.textContent = items.length;
 
       if (!items || items.length === 0) {
@@ -175,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     try {
-      const consultas = await api('/predicciones/mias');
+      const { items } = await api('/predicciones/mias');
 
-      if (!consultas || consultas.length === 0) {
+      if (!items || items.length === 0) {
         contConsultas.innerHTML = `
           <div class="text-center py-5">
             <i class="bi bi-cpu fs-1 text-secondary" aria-hidden="true"></i>
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       const tbody = document.getElementById('tbody-consultas');
-      consultas.forEach(c => {
+      items.forEach(c => {
         const tr = document.createElement('tr');
 
         const tdFecha = document.createElement('td');
@@ -222,7 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
         tdHab.textContent = `${c.num_habitaciones} hab.`;
 
         const tdZona = document.createElement('td');
-        tdZona.innerHTML = `<span class="badge bg-secondary-subtle text-secondary-emphasis">${etiqueta(c.zona)}</span>`;
+        const badgeZona = document.createElement('span');
+        badgeZona.className = 'badge bg-secondary-subtle text-secondary-emphasis';
+        badgeZona.textContent = etiqueta(c.zona);
+        tdZona.appendChild(badgeZona);
 
         const tdAnio = document.createElement('td');
         tdAnio.textContent = c.anio_construccion || '-';
