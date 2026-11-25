@@ -1,14 +1,13 @@
 // =====================================================================
-// Entrenamiento del modelo (admin/entrenamiento.html)
+// Entrenamiento y reentrenamiento del modelo (admin/entrenamiento.html)
 // ---------------------------------------------------------------------
 // tf (TensorFlow.js), tfvis (tfjs-vis) y Papa (Papa Parse) llegan como
 // globales por CDN desde el HTML: no se importan.
-//
-// Carga el CSV, divide 80/20, normaliza (min-max, one-hot), entrena la red neuronal,
-// la evalúa contra la línea base (regresión lineal) y exporta el modelo.
 // =====================================================================
 import { renderNavbar } from '../components/navbar.js';
 import { protegerPagina } from '../auth.js';
+import { api } from '../api.js';
+import { NORMALIZACION_URL } from '../config.js';
 import { ENTRADAS_MODELO, ETIQUETAS, ROL_ADMIN } from '/shared/contrato.js';
 import {
   COLUMNAS_NUMERICAS,
@@ -18,7 +17,6 @@ import {
   resumir,
   vectorizar,
   desescalar,
-  fueraDeRango,
 } from '../ml/preprocesamiento.js';
 import { CASOS_ENUNCIADO } from '../ml/casos-enunciado.js';
 
@@ -26,7 +24,6 @@ const RUTA_CSV = '/assets/data/inmuebles.csv';
 
 if (protegerPagina({ rol: ROL_ADMIN })) renderNavbar();
 
-// Estado compartido del entrenamiento y evaluación
 const estado = {
   filas: null,
   datos: null,
@@ -34,6 +31,8 @@ const estado = {
   lineaBase: null,
   metricasRed: null,
   metricasLineaBase: null,
+  filasCatalogo: 0,
+  modeloActual: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -53,39 +52,51 @@ const NOMBRES = {
   precio_miles_usd: 'Precio (miles USD)',
 };
 
-// Listeners de los 4 pasos
 $('btn-cargar-datos').addEventListener('click', cargarDatos);
 $('btn-entrenar').addEventListener('click', entrenarModelo);
 $('btn-evaluar').addEventListener('click', evaluarModelos);
 $('btn-exportar').addEventListener('click', exportarArchivos);
 
-// Inicialmente los botones 2, 3 y 4 quedan deshabilitados hasta cargar datos
 $('btn-entrenar').disabled = true;
 $('btn-evaluar').disabled = true;
 $('btn-exportar').disabled = true;
 
 // =====================================================================
-// PASO 1: Cargar datos
+// PASO 1: Cargar CSV + filas reales del catálogo + métricas actuales
 // =====================================================================
 async function cargarDatos() {
   const boton = $('btn-cargar-datos');
   boton.disabled = true;
-  txtEstado.textContent = 'Cargando el dataset…';
+  txtEstado.textContent = 'Cargando dataset base y catálogo de inmuebles…';
   zonaMetricas.replaceChildren();
   zonaGraficos.replaceChildren();
 
   try {
-    const crudas = await leerCsv(RUTA_CSV);
-    const { validas, descartadas } = limpiarFilas(crudas);
-    if (!validas.length) throw new Error('El CSV no tiene filas válidas');
+    const [crudasCsv, filasBd, modeloActual] = await Promise.all([
+      leerCsv(RUTA_CSV),
+      cargarFilasCatalogo(),
+      cargarModeloActual(),
+    ]);
+
+    estado.modeloActual = modeloActual;
+    estado.filasCatalogo = Array.isArray(filasBd) ? filasBd.length : 0;
+
+    const combinadas = Array.isArray(filasBd) ? [...crudasCsv, ...filasBd] : crudasCsv;
+    const { validas, descartadas } = limpiarFilas(combinadas);
+    if (!validas.length) throw new Error('No hay filas válidas para entrenar');
 
     estado.filas = validas;
     estado.datos = prepararDatos(validas);
 
     const { datos } = estado;
+    const detalleCatalogo =
+      filasBd === null
+        ? 'endpoint de catálogo pendiente'
+        : `${estado.filasCatalogo} del catálogo BD`;
+
     txtEstado.textContent =
-      `✔ ${validas.length} filas válidas (${descartadas} descartadas) · ` +
-      `entrenamiento ${datos.entrenamiento.length} · prueba ${datos.prueba.length}`;
+      `✔ ${validas.length} filas válidas (${crudasCsv.length} CSV + ${detalleCatalogo}, ` +
+      `${descartadas} descartadas) · entrenamiento ${datos.entrenamiento.length} · prueba ${datos.prueba.length}`;
 
     mostrarResumen(resumir(validas));
     mostrarNormalizacion(datos);
@@ -115,6 +126,32 @@ function leerCsv(url) {
   });
 }
 
+async function cargarFilasCatalogo() {
+  try {
+    const data = await api('/dataset/entrenamiento');
+    const filas = Array.isArray(data) ? data : data?.filas || [];
+    return filas.map((f) => ({
+      superficie_m2: Number(f.superficie_m2),
+      num_habitaciones: Number(f.num_habitaciones),
+      zona: f.zona,
+      anio_construccion: Number(f.anio_construccion),
+      precio_miles_usd: Number(f.precio_venta_usd) / 1000,
+    }));
+  } catch {
+    return null;
+  }
+}
+
+async function cargarModeloActual() {
+  try {
+    const res = await fetch(NORMALIZACION_URL);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 // =====================================================================
 // PASO 2: Entrenar Red Neuronal (6 -> 16 -> 8 -> 1)
 // =====================================================================
@@ -124,11 +161,9 @@ async function entrenarModelo() {
   btn.disabled = true;
   txtEstado.textContent = 'Entrenando Red Neuronal con TensorFlow.js...';
 
-  // 1. Convertir arreglos preprocesados a Tensores 2D
   const xs = tf.tensor2d(estado.datos.xEntrenamiento);
   const ys = tf.tensor2d(estado.datos.yEntrenamiento);
 
-  // 2. Definir arquitectura: 6 -> 16 (relu) -> 8 (relu) -> 1 (linear)
   const red = tf.sequential();
   red.add(tf.layers.dense({ units: 16, activation: 'relu', inputShape: [6] }));
   red.add(tf.layers.dense({ units: 8, activation: 'relu' }));
@@ -140,7 +175,6 @@ async function entrenarModelo() {
     metrics: ['mae'],
   });
 
-  // Callbacks para visor visual (tfjs-vis) y parada temprana
   const visor = tfvis.visor();
   if (!visor.isOpen()) visor.open();
 
@@ -150,9 +184,9 @@ async function entrenarModelo() {
     { callbacks: ['onEpochEnd'] }
   );
 
-  // Implementación segura de parada temprana (evita el bug de getMonitorValue en TF.js)
+  // Parada temprana manual para evitar incompatibilidad de getMonitorValue en TF.js 4.22
   let mejorPerdida = Infinity;
-  let paciencia = 15;
+  const paciencia = 15;
   let conteoSinMejora = 0;
   let epocaDeParada = null;
 
@@ -168,7 +202,7 @@ async function entrenarModelo() {
           red.stopTraining = true;
         }
       }
-    }
+    },
   };
 
   try {
@@ -197,7 +231,7 @@ async function entrenarModelo() {
 }
 
 // =====================================================================
-// PASO 3: Evaluar (Red vs Línea Base) y Casos de Aceptación
+// PASO 3: Evaluar (Red vs Línea Base vs Modelo Actual) y Aceptación
 // =====================================================================
 async function evaluarModelos() {
   if (!estado.modelo || !estado.datos) return;
@@ -208,7 +242,6 @@ async function evaluarModelos() {
   try {
     const { normalizacion, xEntrenamiento, yEntrenamiento, xPrueba, yPrueba } = estado.datos;
 
-    // 1. Entrenar Línea Base (dense 1 sola neurona) para justificar la red en el informe
     const lineaBase = tf.sequential();
     lineaBase.add(tf.layers.dense({ units: 1, activation: 'linear', inputShape: [6] }));
     lineaBase.compile({ optimizer: tf.train.adam(0.01), loss: 'meanSquaredError', metrics: ['mae'] });
@@ -220,7 +253,6 @@ async function evaluarModelos() {
     ysTrain.dispose();
     estado.lineaBase = lineaBase;
 
-    // 2. Calcular métricas en USD sobre el 20% de prueba (test)
     const xsTest = tf.tensor2d(xPrueba);
     const predsRed = estado.modelo.predict(xsTest).dataSync();
     const predsLB = estado.lineaBase.predict(xsTest).dataSync();
@@ -234,7 +266,6 @@ async function evaluarModelos() {
     estado.metricasRed = calcularMetricas(realesUSD, predsRedUSD);
     estado.metricasLineaBase = calcularMetricas(realesUSD, predsLbUSD);
 
-    // 3. Evaluar los 5 casos del enunciado con la Red
     const prediccionesEnunciado = CASOS_ENUNCIADO.map((c) => {
       const vec = vectorizar(c, normalizacion);
       const salidaNorm = tf.tidy(() => estado.modelo.predict(tf.tensor2d([vec])).dataSync()[0]);
@@ -251,7 +282,7 @@ async function evaluarModelos() {
     });
 
     mostrarResultadosEvaluacion(prediccionesEnunciado);
-    txtEstado.textContent = '✔ Evaluación completada. Revisa las métricas y exporta el modelo.';
+    txtEstado.textContent = '✔ Evaluación completada. Revisa la comparativa antes de exportar.';
     $('btn-exportar').disabled = false;
   } catch (err) {
     txtEstado.textContent = `✖ Error al evaluar: ${err.message}`;
@@ -287,6 +318,14 @@ function calcularMetricas(reales, predichos) {
   return { mae, mse, rmse, r2, errorPct, promedioReal };
 }
 
+function calcularSiguienteVersion() {
+  const actual = estado.modeloActual?.version_modelo || '1.0.0';
+  if (estado.filasCatalogo === 0) return actual;
+  const partes = actual.split('.').map(Number);
+  if (partes.length !== 3 || partes.some(Number.isNaN)) return '1.1.0';
+  return `${partes[0]}.${partes[1] + 1}.0`;
+}
+
 // =====================================================================
 // PASO 4: Exportar modelo y normalización
 // =====================================================================
@@ -297,13 +336,12 @@ async function exportarArchivos() {
   txtEstado.textContent = 'Exportando modelo y normalización...';
 
   try {
-    // 1. Descargar modelo_inmuebles.json y modelo_inmuebles.weights.bin
     await estado.modelo.save('downloads://modelo_inmuebles');
 
-    // 2. Construir objeto normalizacion.json oficial (sección 6.2 del plan)
     const { normalizacion } = estado.datos;
+    const nuevaVersion = calcularSiguienteVersion();
     const objetoNormalizacion = {
-      version_modelo: '1.0.0',
+      version_modelo: nuevaVersion,
       entradas: ENTRADAS_MODELO,
       min: normalizacion.min,
       max: normalizacion.max,
@@ -315,7 +353,6 @@ async function exportarArchivos() {
       },
     };
 
-    // Descargar normalizacion.json
     const blob = new Blob([JSON.stringify(objetoNormalizacion, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -324,7 +361,7 @@ async function exportarArchivos() {
     URL.revokeObjectURL(link.href);
 
     txtEstado.textContent =
-      '✔ ¡Archivos descargados! Copia los 3 archivos desde Descargas hacia tu carpeta client/assets/model/';
+      `✔ ¡Versión ${nuevaVersion} descargada! Borra copias viejas en Descargas antes de copiar los 3 archivos a client/assets/model/`;
   } catch (err) {
     txtEstado.textContent = `✖ Error al exportar: ${err.message}`;
     console.error(err);
@@ -363,6 +400,8 @@ function mostrarResultadosEvaluacion(casos) {
   );
   zonaMetricas.append(tablaComp);
 
+  mostrarComparativaVersionActual(red);
+
   agregarTitulo(zonaMetricas, 'Casos de Aceptación del Enunciado (Tolerancia ±10 %)');
   const tablaCasos = crearTabla(
     ['Superficie', 'Hab.', 'Zona', 'Año', 'Esperado (USD)', 'Predicción Red (USD)', 'Diferencia %', 'Aceptación'],
@@ -378,6 +417,24 @@ function mostrarResultadosEvaluacion(casos) {
     ])
   );
   zonaMetricas.append(tablaCasos);
+}
+
+function mostrarComparativaVersionActual(redNueva) {
+  const actual = estado.modeloActual?.metricas_test;
+  if (!actual) return;
+
+  const versionActual = estado.modeloActual.version_modelo || '1.0.0';
+  const mejoraR2 = redNueva.r2 >= actual.r2;
+  const mejoraMae = redNueva.mae <= actual.mae_usd;
+  const esMejor = mejoraR2 && mejoraMae;
+
+  const caja = document.createElement('div');
+  caja.className = `alert ${esMejor ? 'alert-success' : 'alert-warning'} mb-3`;
+  caja.textContent = esMejor
+    ? `✔ Mejora frente a la versión publicada (v${versionActual}: R² ${actual.r2}, MAE ${formatoDolar.format(actual.mae_usd)}). Apto para publicar.`
+    : `⚠ No supera todas las métricas de la versión publicada (v${versionActual}: R² ${actual.r2}, MAE ${formatoDolar.format(actual.mae_usd)}). Revisa si conviene publicarlo.`;
+
+  zonaMetricas.append(caja);
 }
 
 function mostrarResumen(resumen) {
