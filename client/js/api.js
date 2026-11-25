@@ -41,7 +41,8 @@ export async function api(ruta, { metodo = 'GET', datos, formData } = {}) {
     throw new ApiError('ERROR_CONEXION', 'No se pudo conectar con el servidor.');
   }
 
-  if (respuesta.status === 401) {
+  // Sin token, un 401 es un login fallido: se muestra el mensaje de la API y no se recarga
+  if (respuesta.status === 401 && token) {
     cerrarSesion();
     throw new ApiError('NO_AUTENTICADO', 'Tu sesión ha expirado. Ingresa de nuevo.');
   }
