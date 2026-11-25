@@ -8,7 +8,6 @@ import { pool } from '../config/db.js';
 import { DESCRIPCIONES, INMUEBLES, PREDICCIONES_ANA, USUARIOS } from './datos-prueba.js';
 
 const VERSION_MODELO = '1.0.0';
-const FOTOS_POR_TIPO = 6; // casa-01.jpg … casa-06.jpg y depa-01.jpg … depa-06.jpg
 const MILISEGUNDOS_POR_DIA = 24 * 60 * 60 * 1000;
 
 const haceDias = (dias) => new Date(Date.now() - dias * MILISEGUNDOS_POR_DIA);
@@ -21,16 +20,6 @@ const estimarPrecio = ({ superficie_m2, num_habitaciones, zona, anio_construccio
       8000 * num_habitaciones +
       2000 * (anio_construccion - 2000),
   );
-
-// Entre 1 y 3 fotos según el tipo; se van rotando para que no todos tengan la misma principal
-function elegirFotos(tipo_inmueble, posicion) {
-  const prefijo = tipo_inmueble === 'casa' ? 'casa' : 'depa';
-  const cantidad = 1 + (posicion % 3);
-  return Array.from({ length: cantidad }, (_, i) => {
-    const numero = String(((posicion + i) % FOTOS_POR_TIPO) + 1).padStart(2, '0');
-    return `/assets/img/seed/${prefijo}-${numero}.jpg`;
-  });
-}
 
 // El orden importa por las llaves foráneas. Va antes de la transacción:
 // ALTER TABLE confirma la transacción por sí solo.
@@ -89,21 +78,19 @@ async function insertarInmueble(conexion, id_usuario, inmueble, fecha_publicacio
 
 // Devuelve cuántas fotos se guardaron
 async function crearInmuebles(conexion, idsPropietarios) {
-  const vistosPorTipo = { casa: 0, departamento: 0 };
   let totalFotos = 0;
 
   for (const [i, inmueble] of INMUEBLES.entries()) {
     const id_usuario = idsPropietarios[i % idsPropietarios.length];
     const id_inmueble = await insertarInmueble(conexion, id_usuario, inmueble, haceDias(i + 1));
 
-    const fotos = elegirFotos(inmueble.tipo_inmueble, vistosPorTipo[inmueble.tipo_inmueble]++);
-    for (const [indice, ruta] of fotos.entries()) {
+    for (const [indice, foto] of inmueble.fotos.entries()) {
       await conexion.execute(
         'INSERT INTO fotos_inmueble (id_inmueble, ruta, orden) VALUES (?, ?, ?)',
-        [id_inmueble, ruta, indice + 1],
+        [id_inmueble, `/assets/img/seed/${foto}.jpg`, indice + 1],
       );
     }
-    totalFotos += fotos.length;
+    totalFotos += inmueble.fotos.length;
   }
   return totalFotos;
 }
