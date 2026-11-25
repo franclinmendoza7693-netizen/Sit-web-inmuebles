@@ -1,9 +1,3 @@
-/* =====================================================================
-   Estilos propios de InmoPredict
-   Prefijo ip- para no chocar con Bootstrap. Valores: siempre var(--ip-…).
-   ===================================================================== */
-
-/* ---------- Estructura: el footer queda abajo aunque la página sea corta ---------- */
 body {
   display: flex;
   flex-direction: column;
@@ -13,19 +7,16 @@ body > main {
   flex: 1 0 auto;
 }
 
-/* Foco visible para quien navega con teclado */
 :focus-visible {
   outline: none;
   box-shadow: var(--ip-foco);
   border-radius: var(--ip-radio-sm);
 }
 
-/* ---------- Navbar ---------- */
 .ip-navbar {
   background: var(--ip-color-primario);
 }
 
-/* ---------- Bloques comunes ---------- */
 .ip-titulo-pagina {
   color: var(--ip-color-primario);
   font-weight: 700;
@@ -39,7 +30,6 @@ body > main {
   padding: var(--ip-espacio-4);
 }
 
-/* Botón principal (texto blanco sobre acento oscuro: contraste AA) */
 .btn-ip {
   --bs-btn-bg: var(--ip-color-acento-oscuro);
   --bs-btn-border-color: var(--ip-color-acento-oscuro);
@@ -50,13 +40,14 @@ body > main {
   --bs-btn-active-bg: var(--ip-color-acento-hover);
   --bs-btn-active-border-color: var(--ip-color-acento-hover);
   --bs-btn-active-color: #fff;
-  --bs-btn-disabled-bg: var(--ip-color-acento-oscuro);
-  --bs-btn-disabled-border-color: var(--ip-color-acento-oscuro);
-  --bs-btn-focus-shadow-rgb: 194, 80, 47;
   font-weight: 600;
 }
 
-/* ---------- Tarjeta de inmueble ---------- */
+.ip-hero {
+  background: linear-gradient(135deg, var(--ip-color-primario) 0%, var(--ip-color-primario-oscuro) 100%);
+  border-bottom: 3px solid var(--ip-color-acento);
+}
+
 .ip-card-inmueble {
   border: 1px solid var(--ip-color-borde);
   box-shadow: var(--ip-sombra);
@@ -95,7 +86,6 @@ body > main {
   color: var(--ip-color-texto-suave);
 }
 
-/* ---------- Resultado de la predicción ---------- */
 .ip-resultado-precio {
   color: var(--ip-color-acento);
   font-size: var(--ip-texto-precio);
@@ -103,7 +93,6 @@ body > main {
   line-height: 1.1;
 }
 
-/* ---------- Páginas de acceso (login y registro) ---------- */
 .ip-acceso {
   max-width: 980px;
 }
@@ -123,10 +112,6 @@ body > main {
   font-size: var(--ip-texto-xl);
   font-weight: 700;
 }
-.ip-acceso-marca p,
-.ip-acceso-marca li {
-  color: rgba(255, 255, 255, 0.85);
-}
 .ip-acceso-beneficios {
   list-style: none;
   padding: 0;
@@ -140,24 +125,11 @@ body > main {
 .ip-acceso-beneficios i {
   color: var(--ip-color-acento);
   font-size: var(--ip-texto-lg);
-  line-height: 1.2;
 }
 .ip-acceso-form {
   padding: var(--ip-espacio-5);
 }
-.ip-seccion-form {
-  font-size: var(--ip-texto-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ip-color-primario-claro);
-  margin: var(--ip-espacio-4) 0 var(--ip-espacio-2);
-}
-.ip-seccion-form:first-of-type {
-  margin-top: 0;
-}
 
-/* Lista de requisitos de la contraseña (registro.js la actualiza en vivo) */
 .ip-requisitos {
   list-style: none;
   padding: 0;
@@ -178,7 +150,25 @@ body > main {
   content: '✓ ';
 }
 
-/* ---------- Footer ---------- */
+.ip-tabs-panel .nav-link {
+  color: var(--ip-color-texto-suave);
+  font-weight: 600;
+}
+.ip-tabs-panel .nav-link.active {
+  color: var(--ip-color-primario);
+  border-bottom-color: var(--ip-color-superficie);
+}
+.ip-card-agregar {
+  border-color: var(--ip-color-borde) !important;
+  background-color: #fafbfc;
+  transition: all var(--ip-transicion);
+}
+.ip-card-agregar:hover {
+  border-color: var(--ip-color-primario) !important;
+  background-color: #fff;
+  transform: translateY(-2px);
+}
+
 .ip-footer {
   background: var(--ip-color-primario);
   color: rgba(255, 255, 255, 0.85);
@@ -213,4 +203,25 @@ body > main {
   margin-top: var(--ip-espacio-4);
   padding-top: var(--ip-espacio-3);
   color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 576px) {
+  .ip-acceso-form {
+    padding: var(--ip-espacio-3);
+  }
+  .ip-panel {
+    padding: var(--ip-espacio-3);
+  }
+  .ip-requisitos {
+    grid-template-columns: 1fr;
+  }
+  .ip-hero h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .ip-panel {
+    padding: var(--ip-espacio-4);
+  }
 }

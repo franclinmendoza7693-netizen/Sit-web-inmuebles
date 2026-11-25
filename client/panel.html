@@ -3,34 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mi panel · InmoPredict</title>
+  <title>Mi Panel · InmoPredict</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231d3557' d='M8 1 1 7h2v8h4v-5h2v5h4V7h2z'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/assets/css/variables.css">
   <link rel="stylesheet" href="/assets/css/estilos.css">
 </head>
 <body>
   <header id="navbar"></header>
+
   <main class="container py-4">
-    <h1 class="h3 ip-titulo-pagina mb-3">Mi panel</h1>
-    <ul class="nav nav-tabs" role="tablist">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <div>
+        <h1 class="h3 ip-titulo-pagina mb-1">Mi panel de propietario</h1>
+        <p class="text-secondary small mb-0">Gestiona tus inmuebles y revisa tus tasaciones recientes.</p>
+      </div>
+      <a href="/publicar.html" class="btn btn-ip btn-sm px-3 py-2">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Publicar inmueble
+      </a>
+    </div>
+
+    <ul class="nav nav-tabs ip-tabs-panel mb-0" id="tabs-panel" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inmuebles" type="button" role="tab">Mis inmuebles</button>
+        <button class="nav-link active" id="tab-btn-inmuebles" data-bs-toggle="tab" data-bs-target="#panel-inmuebles" type="button" role="tab" aria-controls="panel-inmuebles" aria-selected="true">
+          <i class="bi bi-houses me-1" aria-hidden="true"></i> Mis inmuebles (<span id="contador-inmuebles">0</span>)
+        </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-consultas" type="button" role="tab">Mis consultas</button>
+        <button class="nav-link" id="tab-btn-consultas" data-bs-toggle="tab" data-bs-target="#panel-consultas" type="button" role="tab" aria-controls="panel-consultas" aria-selected="false">
+          <i class="bi bi-clock-history me-1" aria-hidden="true"></i> Historial de tasaciones
+        </button>
       </li>
     </ul>
-    <div class="tab-content ip-panel border-top-0 rounded-top-0">
-      <div class="tab-pane fade show active" id="tab-inmuebles" role="tabpanel">
-        <div id="lista-mis-inmuebles" class="row g-4"></div>
-      </div>
-      <div class="tab-pane fade" id="tab-consultas" role="tabpanel">
-        <div id="tabla-mis-consultas"></div>
-      </div>
+
+    <div class="tab-content ip-panel rounded-top-0 border-top-0 p-4">
+      <section class="tab-pane fade show active" id="panel-inmuebles" role="tabpanel" aria-labelledby="tab-btn-inmuebles">
+        <div id="contenedor-mis-inmuebles">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando…</span>
+            </div>
+            <p class="text-secondary mt-2 small">Cargando tus inmuebles…</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="panel-consultas" role="tabpanel" aria-labelledby="tab-btn-consultas">
+        <div id="contenedor-mis-consultas">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando…</span>
+            </div>
+            <p class="text-secondary mt-2 small">Cargando historial de consultas…</p>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
+
   <footer class="ip-footer">
     <div class="container">
       <div class="row g-4">
@@ -55,10 +86,11 @@
           </ul>
         </nav>
       </div>
-      <p class="ip-footer-legal mb-0">© 2026 InmoPredict · Proyecto académico, Caso 01. Los precios estimados son referenciales.</p>
+      <p class="ip-footer-legal mb-0">© 2026 InmoPredict · Proyecto académico, Caso 01. Precios referenciales.</p>
     </div>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/js/pages/panel.js"></script>
 </body>
 </html>
