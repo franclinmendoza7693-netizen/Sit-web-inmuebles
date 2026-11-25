@@ -1,6 +1,3 @@
-/**
- * InmoPredict — Card de Inmueble con protección anti-XSS (.textContent)
- */
 import { formatearUSD, formatearPEN, etiqueta } from '../utils/formato.js';
 
 export function crearCardInmueble(inmueble) {

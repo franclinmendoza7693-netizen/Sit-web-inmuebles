@@ -1,16 +1,8 @@
-/**
- * InmoPredict — Módulo de Sesión y Autenticación Frontend
- * Usa las constantes sagradas de shared/contrato.js
- */
-import { STORAGE } from '/shared/contrato.js';
+import { STORAGE, ROL_ADMIN } from '/shared/contrato.js';
 
 export function guardarSesion({ token, usuario }) {
-  if (token) {
-    localStorage.setItem(STORAGE.TOKEN, token);
-  }
-  if (usuario) {
-    localStorage.setItem(STORAGE.USUARIO, JSON.stringify(usuario));
-  }
+  if (token) localStorage.setItem(STORAGE.TOKEN, token);
+  if (usuario) localStorage.setItem(STORAGE.USUARIO, JSON.stringify(usuario));
 }
 
 export function obtenerToken() {
@@ -39,7 +31,7 @@ export function cerrarSesion(redir = '/login.html') {
   window.location.href = redir;
 }
 
-export function protegerPagina({ rol } = {}) {
+export function protegerPagina(opciones = {}) {
   if (!estaAutenticado()) {
     const destino = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.href = `/login.html?redir=${destino}`;
@@ -47,11 +39,13 @@ export function protegerPagina({ rol } = {}) {
   }
 
   const usuario = obtenerUsuario();
-  if (rol && usuario.rol !== rol) {
-    alert('No cuentas con permisos para entrar a esta sección.');
+  if (opciones.rol && usuario.rol !== opciones.rol) {
+    alert('No cuentas con permisos para acceder a esta sección.');
     window.location.href = '/index.html';
     return null;
   }
 
   return usuario;
 }
+
+export const requiereAutenticacion = protegerPagina;
