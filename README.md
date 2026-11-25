@@ -68,13 +68,12 @@ Sit-web-inmuebles/
 │   │   ├── data/              inmuebles.csv (dataset de entrenamiento)
 │   │   ├── img/               imágenes de la interfaz
 │   │   └── model/             modelo exportado: JSON, pesos y normalización
-│   ├── js/
-│   │   ├── api.js · auth.js · config.js   conexión con la API, sesión y configuración
-│   │   ├── components/        piezas reutilizables: navbar, tarjeta, ver contraseña
-│   │   ├── ml/                predicción y preprocesamiento con TensorFlow.js
-│   │   ├── pages/             un script por página
-│   │   └── utils/             formatos y formularios
-│   └── mocks/                 datos de ejemplo del catálogo (temporal: se elimina el día 3)
+│   └── js/
+│       ├── api.js · auth.js · config.js   conexión con la API, sesión y configuración
+│       ├── components/        piezas reutilizables: navbar, tarjeta, avisos, ver contraseña
+│       ├── ml/                predicción y preprocesamiento con TensorFlow.js
+│       ├── pages/             un script por página
+│       └── utils/             formatos y formularios
 ├── server/                    backend: API REST con Node.js y Express (MVC)
 │   ├── index.js               arranca el servidor
 │   ├── app.js                 configura Express: seguridad, archivos estáticos, rutas y errores
@@ -105,10 +104,13 @@ Todas las respuestas tienen la forma `{ ok, data, mensaje }` o `{ ok: false, err
 | POST | `/api/auth/login` | Público | Inicio de sesión; devuelve un token JWT |
 | GET | `/api/auth/perfil` | Token | Datos del usuario autenticado |
 | GET | `/api/inmuebles` | Público | Catálogo de inmuebles publicados. Filtros opcionales: `tipo_inmueble`, `zona`, `distrito`, `precio_min`, `precio_max`; `orden` (`recientes`, `precio_asc`, `precio_desc`) y `pagina`. Devuelve `items`, `pagina`, `por_pagina` y `total` |
+| GET | `/api/inmuebles/mios` | Token | Inmuebles del usuario autenticado en todos los estados, los más recientes primero |
 | GET | `/api/inmuebles/:id_inmueble` | Público | Detalle de un inmueble publicado, con sus fotos y el contacto del propietario |
 | POST | `/api/inmuebles` | Token | Publica un inmueble. Se envía como `multipart/form-data`, con los datos del inmueble y hasta 5 fotos (JPG, PNG o WebP de máximo 2 MB) en el campo `fotos` |
+| PATCH | `/api/inmuebles/:id_inmueble/estado` | Dueño | Cambia el `estado` (`publicado`, `pausado` o `vendido`). Devuelve `id_inmueble` y `estado` |
 | POST | `/api/predicciones` | Token | Guarda una consulta de precio: `superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_estimado_usd` y `version_modelo`. Devuelve `id_prediccion` |
 | GET | `/api/predicciones/mias` | Token | Consultas del usuario autenticado, las más recientes primero |
+| GET | `/api/dataset/entrenamiento` | Admin | Filas del catálogo (`superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_venta_usd`) para reentrenar el modelo |
 
 ## Usuarios de prueba
 

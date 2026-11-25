@@ -57,7 +57,9 @@ CREATE TABLE inmuebles (
 CREATE TABLE fotos_inmueble (
   id_foto      INT AUTO_INCREMENT PRIMARY KEY,
   id_inmueble  INT NOT NULL,
-  ruta         VARCHAR(255) NOT NULL,           -- ruta pública: /uploads/inmuebles/<archivo>
+  -- ruta pública: /uploads/inmuebles/<archivo> (fotos subidas)
+  -- o /assets/img/seed/<archivo> (datos de prueba)
+  ruta         VARCHAR(255) NOT NULL,
   orden        TINYINT UNSIGNED NOT NULL DEFAULT 1,
   CONSTRAINT fk_fotos_inmuebles FOREIGN KEY (id_inmueble)
     REFERENCES inmuebles(id_inmueble) ON DELETE CASCADE

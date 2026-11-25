@@ -19,7 +19,7 @@ const almacenamiento = multer.diskStorage({
   },
 });
 
-export const subirFotos = multer({
+const recibirFotos = multer({
   storage: almacenamiento,
   limits: { fileSize: LIMITES.fotos.mb * 1024 * 1024, files: LIMITES.fotos.max },
   fileFilter: (req, file, cb) => {
@@ -27,6 +27,15 @@ export const subirFotos = multer({
     return cb(new ApiError(400, 'VALIDACION', 'Formato de foto no permitido', { fotos: 'Solo JPG, PNG o WebP' }));
   },
 }).array('fotos', LIMITES.fotos.max); // el input se llama name="fotos"
+
+export function subirFotos(req, res, next) {
+  recibirFotos(req, res, (err) => {
+    // Los errores con "code" son de multer o del disco y se tratan en errores.js; los que llegan
+    // sin código vienen de un formulario cortado o mal armado
+    if (!err || err instanceof ApiError || err.code) return next(err);
+    return next(new ApiError(400, 'VALIDACION', 'El formulario enviado no es válido'));
+  });
+}
 
 // multer guarda las fotos antes de que se validen los demás campos. Si la petición termina con error
 // (datos inválidos, fallo al guardar en la base), esas fotos quedarían huérfanas en el disco: se borran.

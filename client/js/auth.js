@@ -1,4 +1,4 @@
-import { STORAGE, ROL_ADMIN } from '/shared/contrato.js';
+import { STORAGE } from '/shared/contrato.js';
 
 export function guardarSesion({ token, usuario }) {
   if (token) localStorage.setItem(STORAGE.TOKEN, token);
@@ -47,5 +47,3 @@ export function protegerPagina(opciones = {}) {
 
   return usuario;
 }
-
-export const requiereAutenticacion = protegerPagina;

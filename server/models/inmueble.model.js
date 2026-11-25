@@ -10,6 +10,14 @@ const ORDEN_SQL = {
 };
 export const ORDEN_POR_DEFECTO = 'recientes';
 
+// Columnas de cada item de un listado; foto_principal es la foto de orden 1, o null
+const COLUMNAS_LISTADO = `i.id_inmueble, i.titulo, i.tipo_inmueble, i.zona, i.region, i.provincia,
+  i.distrito, i.superficie_m2, i.num_habitaciones, i.anio_construccion, i.precio_venta_usd,
+  i.precio_estimado_usd, i.estado,
+  (SELECT f.ruta FROM fotos_inmueble f
+    WHERE f.id_inmueble = i.id_inmueble AND f.orden = 1 LIMIT 1) AS foto_principal,
+  i.fecha_publicacion`;
+
 // En LIKE, "%" y "_" son comodines: se escapan para que el distrito se busque tal cual se escribió
 const escaparLike = (texto) => texto.replace(/[\\%_]/g, '\\$&');
 
@@ -45,12 +53,7 @@ export async function listarPublicados({ filtros, orden, pagina, porPagina }) {
   const { donde, valores } = construirFiltros(filtros);
 
   const [items] = await pool.execute(
-    `SELECT i.id_inmueble, i.titulo, i.tipo_inmueble, i.zona, i.region, i.provincia, i.distrito,
-            i.superficie_m2, i.num_habitaciones, i.anio_construccion,
-            i.precio_venta_usd, i.precio_estimado_usd, i.estado,
-            (SELECT f.ruta FROM fotos_inmueble f
-              WHERE f.id_inmueble = i.id_inmueble AND f.orden = 1 LIMIT 1) AS foto_principal,
-            i.fecha_publicacion
+    `SELECT ${COLUMNAS_LISTADO}
        FROM inmuebles i
       WHERE ${donde}
       ORDER BY ${ORDEN_SQL[orden]}
@@ -62,6 +65,43 @@ export async function listarPublicados({ filtros, orden, pagina, porPagina }) {
     valores,
   );
   return { items, total };
+}
+
+// Todos los inmuebles del dueño, en cualquier estado, del más reciente al más antiguo
+export async function listarPorUsuario(id_usuario) {
+  const [items] = await pool.execute(
+    `SELECT ${COLUMNAS_LISTADO}
+       FROM inmuebles i
+      WHERE i.id_usuario = ?
+      ORDER BY ${ORDEN_SQL.recientes}`,
+    [id_usuario],
+  );
+  return items;
+}
+
+// Devuelve el id_usuario del dueño, o null si el inmueble no existe
+export async function buscarDueno(id_inmueble) {
+  const [filas] = await pool.execute('SELECT id_usuario FROM inmuebles WHERE id_inmueble = ?', [
+    id_inmueble,
+  ]);
+  return filas[0]?.id_usuario ?? null;
+}
+
+export async function actualizarEstado(id_inmueble, estado) {
+  await pool.execute('UPDATE inmuebles SET estado = ? WHERE id_inmueble = ?', [
+    estado,
+    id_inmueble,
+  ]);
+}
+
+// Los datos del catálogo con los que se reentrena el modelo: las 4 entradas y el precio pedido
+export async function listarParaEntrenamiento() {
+  const [filas] = await pool.execute(
+    `SELECT superficie_m2, num_habitaciones, zona, anio_construccion, precio_venta_usd
+       FROM inmuebles
+      ORDER BY id_inmueble`,
+  );
+  return filas;
 }
 
 // Guarda el inmueble y sus fotos en una sola transacción: se guardan las dos cosas o ninguna.
