@@ -1,12 +1,12 @@
 import { renderNavbar } from '../components/navbar.js';
 import { api } from '../api.js';
 import { crearCardInmueble } from '../components/card-inmueble.js';
+import { POR_PAGINA } from '/shared/contrato.js';
 
 renderNavbar();
 
 let debounceTimer = null;
 let paginaActual = 1;
-const POR_PAGINA = 8;
 let ordenActual = 'recientes';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function cargarInmuebles() {
     const params = new URLSearchParams();
     params.set('pagina', paginaActual);
-    params.set('por_pagina', POR_PAGINA);
     params.set('orden', ordenActual);
 
     if (formFiltros) {
@@ -148,14 +147,17 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 1; i <= totalPaginas; i++) {
       const li = document.createElement('li');
       li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
-      li.innerHTML = `<button class="page-link">${i}</button>`;
-      li.querySelector('button').addEventListener('click', () => {
+      const boton = document.createElement('button');
+      boton.className = 'page-link';
+      boton.textContent = i;
+      boton.addEventListener('click', () => {
         if (paginaActual !== i) {
           paginaActual = i;
           cargarInmuebles();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
+      li.appendChild(boton);
       listaPaginacion.appendChild(li);
     }
 
