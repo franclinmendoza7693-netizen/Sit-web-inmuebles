@@ -4,7 +4,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { ping } from './config/db.js';
@@ -12,6 +11,7 @@ import { PUERTO } from './config/puerto.js';
 import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
 import { exigirValoresSimples } from './middlewares/valores-simples.js';
+import { cabecerasSeguridad } from './middlewares/seguridad.js';
 import authRoutes from './routes/auth.routes.js';
 import datasetRoutes from './routes/dataset.routes.js';
 import inmueblesRoutes from './routes/inmuebles.routes.js';
@@ -24,9 +24,7 @@ fs.mkdirSync(path.join(UPLOADS, 'inmuebles'), { recursive: true });
 const app = express();
 
 // ---------- Middlewares globales ----------
-// TODO: activar una Content-Security-Policy que permita cdn.jsdelivr.net
-// y probar TODAS las páginas (en especial admin/entrenamiento.html con tfjs-vis) antes de dejarla.
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cabecerasSeguridad);
 // El frontend y la API comparten puerto: ningún otro origen necesita llamar a la API
 app.use(cors({ origin: `http://localhost:${PUERTO}` }));
 app.use(morgan('dev'));
