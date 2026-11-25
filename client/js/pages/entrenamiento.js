@@ -107,7 +107,6 @@ async function cargarDatos() {
     $('btn-entrenar').disabled = false;
   } catch (error) {
     txtEstado.textContent = `✖ ${error.message}`;
-    console.error(error);
   } finally {
     boton.disabled = false;
   }
@@ -222,7 +221,6 @@ async function entrenarModelo() {
     $('btn-evaluar').disabled = false;
   } catch (err) {
     txtEstado.textContent = `✖ Error al entrenar: ${err.message}`;
-    console.error(err);
   } finally {
     xs.dispose();
     ys.dispose();
@@ -286,7 +284,6 @@ async function evaluarModelos() {
     $('btn-exportar').disabled = false;
   } catch (err) {
     txtEstado.textContent = `✖ Error al evaluar: ${err.message}`;
-    console.error(err);
   } finally {
     btn.disabled = false;
   }
@@ -364,7 +361,6 @@ async function exportarArchivos() {
       `✔ ¡Versión ${nuevaVersion} descargada! Borra copias viejas en Descargas antes de copiar los 3 archivos a client/assets/model/`;
   } catch (err) {
     txtEstado.textContent = `✖ Error al exportar: ${err.message}`;
-    console.error(err);
   } finally {
     btn.disabled = false;
   }
