@@ -271,7 +271,7 @@ async function manejarEnvio(e) {
     sessionStorage.removeItem(STORAGE.PREDICCION_PENDIENTE);
     window.location.href = '/panel.html';
   } catch (err) {
-    if (err.campos) {
+    if (err.campos && Object.keys(err.campos).length > 0) {
       pintarErrores(form, err.campos);
     } else {
       mostrarErrorGeneral(err.mensaje || err.message || 'No se pudo publicar el inmueble.');
