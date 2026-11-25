@@ -1,5 +1,13 @@
-// Manejo uniforme de errores — dueño: Dev A
+// Manejo uniforme de errores
+import { LIMITES } from '../../shared/contrato.js';
 import { ApiError, fallo } from '../utils/respuesta.js';
+
+// Errores que lanza multer, escritos para quien sube las fotos
+const MENSAJES_FOTOS = {
+  LIMIT_FILE_SIZE: `Cada foto debe pesar como máximo ${LIMITES.fotos.mb} MB`,
+  LIMIT_FILE_COUNT: `Puedes subir como máximo ${LIMITES.fotos.max} fotos`,
+  LIMIT_UNEXPECTED_FILE: `Envía como máximo ${LIMITES.fotos.max} fotos, en el campo "fotos"`,
+};
 
 export function noEncontrado(req, res) {
   return fallo(res, 404, 'NO_ENCONTRADO', `No existe la ruta ${req.method} ${req.originalUrl}`);
@@ -11,10 +19,13 @@ export function manejarErrores(err, req, res, next) {
   if (err instanceof ApiError) {
     return fallo(res, err.status, err.codigo, err.message, err.campos);
   }
-  if (err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_FILE_COUNT') {
-    return fallo(res, 400, 'VALIDACION', 'Fotos fuera de los límites permitidos', {
-      fotos: err.message,
-    });
+  if (MENSAJES_FOTOS[err.code]) {
+    return fallo(res, 400, 'VALIDACION', 'Revisa las fotos', { fotos: MENSAJES_FOTOS[err.code] });
+  }
+  // Fallos al leer la petición (JSON roto o demasiado grande, URL mal codificada, formulario mal
+  // armado): son del cliente, no del servidor
+  if (err.name === 'MulterError' || (err.status >= 400 && err.status < 500)) {
+    return fallo(res, 400, 'VALIDACION', 'La petición no es válida');
   }
   console.error(err); // el detalle solo va al log, nunca al cliente
   return fallo(res, 500, 'ERROR_SERVIDOR', 'Ocurrió un error inesperado');

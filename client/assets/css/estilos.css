@@ -1,0 +1,229 @@
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body > main {
+  flex: 1 0 auto;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ip-foco);
+  border-radius: var(--ip-radio-sm);
+}
+
+.ip-navbar {
+  background: var(--ip-color-primario);
+}
+
+.ip-titulo-pagina {
+  color: var(--ip-color-primario);
+  font-weight: 700;
+}
+
+.ip-panel {
+  background: var(--ip-color-superficie);
+  border: 1px solid var(--ip-color-borde);
+  border-radius: var(--ip-radio);
+  box-shadow: var(--ip-sombra);
+  padding: var(--ip-espacio-4);
+}
+
+.btn-ip {
+  --bs-btn-bg: var(--ip-color-acento-oscuro);
+  --bs-btn-border-color: var(--ip-color-acento-oscuro);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: var(--ip-color-acento-hover);
+  --bs-btn-hover-border-color: var(--ip-color-acento-hover);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--ip-color-acento-hover);
+  --bs-btn-active-border-color: var(--ip-color-acento-hover);
+  --bs-btn-active-color: #fff;
+  font-weight: 600;
+}
+
+.ip-hero {
+  background: linear-gradient(135deg, var(--ip-color-primario) 0%, var(--ip-color-primario-oscuro) 100%);
+  border-bottom: 3px solid var(--ip-color-acento);
+}
+
+.ip-card-inmueble {
+  border: 1px solid var(--ip-color-borde);
+  box-shadow: var(--ip-sombra);
+  color: var(--ip-color-texto);
+  overflow: hidden;
+  transition: transform var(--ip-transicion), box-shadow var(--ip-transicion);
+}
+.ip-card-inmueble:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ip-sombra-alta);
+}
+.ip-card-foto {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  /* Sin esto, una foto vertical estira el marco y deja la tarjeta más alta */
+  overflow: hidden;
+  background: var(--ip-color-borde);
+}
+.ip-card-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ip-badge-tipo {
+  position: absolute;
+  left: var(--ip-espacio-3);
+  bottom: var(--ip-espacio-3);
+  background: var(--ip-color-primario);
+}
+.ip-precio {
+  color: var(--ip-color-acento);
+  font-size: var(--ip-texto-lg);
+  font-weight: 700;
+}
+.ip-precio-pen,
+.ip-ubicacion,
+.ip-datos {
+  color: var(--ip-color-texto-suave);
+}
+
+.ip-resultado-precio {
+  color: var(--ip-color-acento);
+  font-size: var(--ip-texto-precio);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ip-acceso {
+  max-width: 980px;
+}
+.ip-acceso-tarjeta {
+  background: var(--ip-color-superficie);
+  border: 1px solid var(--ip-color-borde);
+  border-radius: var(--ip-radio);
+  box-shadow: var(--ip-sombra-alta);
+  overflow: hidden;
+}
+.ip-acceso-marca {
+  background: linear-gradient(160deg, var(--ip-color-primario) 0%, var(--ip-color-primario-oscuro) 100%);
+  color: #fff;
+  padding: var(--ip-espacio-5);
+}
+.ip-acceso-marca h2 {
+  font-size: var(--ip-texto-xl);
+  font-weight: 700;
+}
+.ip-acceso-beneficios {
+  list-style: none;
+  padding: 0;
+  margin: var(--ip-espacio-4) 0 0;
+}
+.ip-acceso-beneficios li {
+  display: flex;
+  gap: var(--ip-espacio-3);
+  margin-bottom: var(--ip-espacio-3);
+}
+.ip-acceso-beneficios i {
+  color: var(--ip-color-acento);
+  font-size: var(--ip-texto-lg);
+}
+.ip-acceso-form {
+  padding: var(--ip-espacio-5);
+}
+
+.ip-requisitos {
+  list-style: none;
+  padding: 0;
+  margin: var(--ip-espacio-2) 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ip-espacio-1) var(--ip-espacio-3);
+  font-size: var(--ip-texto-sm);
+  color: var(--ip-color-texto-suave);
+}
+.ip-requisitos li::before {
+  content: '○ ';
+}
+.ip-requisitos li.ip-cumple {
+  color: var(--ip-color-exito);
+}
+.ip-requisitos li.ip-cumple::before {
+  content: '✓ ';
+}
+
+.ip-tabs-panel .nav-link {
+  color: var(--ip-color-texto-suave);
+  font-weight: 600;
+}
+.ip-tabs-panel .nav-link.active {
+  color: var(--ip-color-primario);
+  border-bottom-color: var(--ip-color-superficie);
+}
+.ip-card-agregar {
+  border-color: var(--ip-color-borde) !important;
+  background-color: #fafbfc;
+  transition: all var(--ip-transicion);
+}
+.ip-card-agregar:hover {
+  border-color: var(--ip-color-primario) !important;
+  background-color: #fff;
+  transform: translateY(-2px);
+}
+
+.ip-footer {
+  background: var(--ip-color-primario);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: var(--ip-espacio-6);
+  padding: var(--ip-espacio-5) 0 var(--ip-espacio-4);
+  font-size: var(--ip-texto-sm);
+}
+.ip-footer h2 {
+  color: #fff;
+  font-size: var(--ip-texto-md);
+  font-weight: 700;
+}
+.ip-footer a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+.ip-footer a:hover,
+.ip-footer a:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+}
+.ip-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ip-footer li + li {
+  margin-top: var(--ip-espacio-1);
+}
+.ip-footer-legal {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: var(--ip-espacio-4);
+  padding-top: var(--ip-espacio-3);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 576px) {
+  .ip-acceso-form {
+    padding: var(--ip-espacio-3);
+  }
+  .ip-panel {
+    padding: var(--ip-espacio-3);
+  }
+  .ip-requisitos {
+    grid-template-columns: 1fr;
+  }
+  .ip-hero h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .ip-panel {
+    padding: var(--ip-espacio-4);
+  }
+}

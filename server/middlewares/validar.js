@@ -1,4 +1,4 @@
-// Convierte los errores de express-validator al sobre del contrato — dueño: Dev A
+// Convierte los errores de express-validator al sobre del contrato
 //
 // Uso en una ruta:
 //   import { body } from 'express-validator';

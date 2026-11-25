@@ -1,9 +1,8 @@
-// Exportación del catálogo como dataset — dueño: Dev A (día 4)
-import { pendiente } from '../utils/respuesta.js';
+import { ok } from '../utils/respuesta.js';
+import * as Inmueble from '../models/inmueble.model.js';
 
-// GET /api/dataset/entrenamiento (solo admin)
-// → ok(res, { filas: [{ superficie_m2, num_habitaciones, zona, anio_construccion, precio_venta_usd }] })
-// Incluir inmuebles en estado 'publicado' o 'vendido'.
+// GET /api/dataset/entrenamiento
 export async function exportarEntrenamiento(req, res) {
-  return pendiente(res);
+  const filas = await Inmueble.listarParaEntrenamiento();
+  return ok(res, { filas });
 }

@@ -1,13 +1,48 @@
-// Rutas de autenticación — dueño: Dev A (día 2)
-// Las validaciones (express-validator + validar) se agregan aquí, usando REGEX y MENSAJES del contrato.
+// Las reglas de validación salen de shared/contrato.js (las mismas que usa el frontend).
 import { Router } from 'express';
+import { body } from 'express-validator';
+import { REGEX, MENSAJES } from '../../shared/contrato.js';
+import { validar } from '../middlewares/validar.js';
 import { verificarToken } from '../middlewares/auth.js';
+import { limiteLogin } from '../middlewares/limite-login.js';
 import { registro, login, perfil } from '../controllers/auth.controller.js';
 
 const router = Router();
 
-router.post('/registro', registro); // dni, nombres, apellidos, telefono, email, password
-router.post('/login', login); // dni, password  (agregar express-rate-limit: 5 intentos / 15 min)
+const reglasRegistro = [
+  body('dni').trim().matches(REGEX.dni).withMessage(MENSAJES.dni),
+  body('nombres')
+    .trim()
+    .notEmpty().withMessage('Ingresa tus nombres')
+    .isLength({ max: 80 }).withMessage('Máximo 80 caracteres'),
+  body('apellidos')
+    .trim()
+    .notEmpty().withMessage('Ingresa tus apellidos')
+    .isLength({ max: 80 }).withMessage('Máximo 80 caracteres'),
+  body('telefono')
+    .optional({ values: 'falsy' })
+    .trim()
+    .matches(REGEX.telefono).withMessage(MENSAJES.telefono),
+  body('email')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isEmail().withMessage('Correo no válido')
+    .isLength({ max: 120 }).withMessage('Máximo 120 caracteres'),
+  body('password')
+    .isString().withMessage(MENSAJES.password)
+    .bail()
+    .matches(REGEX.password).withMessage(MENSAJES.password),
+];
+
+// En el login no se valida la fortaleza de la contraseña (eso es del registro): solo que venga un texto
+const reglasLogin = [
+  body('dni').trim().matches(REGEX.dni).withMessage(MENSAJES.dni),
+  body('password').isString().notEmpty().withMessage('Ingresa tu contraseña'),
+];
+
+router.post('/registro', reglasRegistro, validar, registro); // dni, nombres, apellidos, telefono, email, password
+// El limitador va primero: cuenta cada intento fallido (incluso los mal formados) antes de validar
+router.post('/login', limiteLogin, reglasLogin, validar, login); // dni, password
 router.get('/perfil', verificarToken, perfil);
 
 export default router;
