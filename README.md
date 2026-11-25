@@ -68,13 +68,12 @@ Sit-web-inmuebles/
 │   │   ├── data/              inmuebles.csv (dataset de entrenamiento)
 │   │   ├── img/               imágenes de la interfaz
 │   │   └── model/             modelo exportado: JSON, pesos y normalización
-│   ├── js/
-│   │   ├── api.js · auth.js · config.js   conexión con la API, sesión y configuración
-│   │   ├── components/        piezas reutilizables: navbar, tarjeta, ver contraseña
-│   │   ├── ml/                predicción y preprocesamiento con TensorFlow.js
-│   │   ├── pages/             un script por página
-│   │   └── utils/             formatos y formularios
-│   └── mocks/                 datos de ejemplo del catálogo (temporal: se elimina el día 3)
+│   └── js/
+│       ├── api.js · auth.js · config.js   conexión con la API, sesión y configuración
+│       ├── components/        piezas reutilizables: navbar, tarjeta, avisos, ver contraseña
+│       ├── ml/                predicción y preprocesamiento con TensorFlow.js
+│       ├── pages/             un script por página
+│       └── utils/             formatos y formularios
 ├── server/                    backend: API REST con Node.js y Express (MVC)
 │   ├── index.js               arranca el servidor
 │   ├── app.js                 configura Express: seguridad, archivos estáticos, rutas y errores
