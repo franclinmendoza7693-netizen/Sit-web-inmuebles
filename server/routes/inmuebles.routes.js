@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import { LIMITES, ORDENES, TIPOS_INMUEBLE, ZONAS } from '../../shared/contrato.js';
+import {
+  ESTADOS_INMUEBLE,
+  LIMITES,
+  ORDENES,
+  TIPOS_INMUEBLE,
+  ZONAS,
+} from '../../shared/contrato.js';
 import { verificarToken } from '../middlewares/auth.js';
 import {
   entre,
@@ -10,7 +16,13 @@ import {
 } from '../middlewares/reglas-inmueble.js';
 import { borrarFotosSiFalla, subirFotos } from '../middlewares/subida.js';
 import { validar } from '../middlewares/validar.js';
-import { crear, detalle, listar, listarMios } from '../controllers/inmuebles.controller.js';
+import {
+  cambiarEstado,
+  crear,
+  detalle,
+  listar,
+  listarMios,
+} from '../controllers/inmuebles.controller.js';
 
 const router = Router();
 
@@ -63,6 +75,13 @@ const reglasDetalle = [
   param('id_inmueble').isInt({ min: 1 }).withMessage('Debe ser un entero positivo').bail().toInt(),
 ];
 
+const reglasEstado = [
+  ...reglasDetalle,
+  body('estado')
+    .isIn(ESTADOS_INMUEBLE)
+    .withMessage(`Debe ser uno de: ${ESTADOS_INMUEBLE.join(', ')}`),
+];
+
 const DESCRIPCION_MAX = 2000;
 
 const textoObligatorio = (campo, max) =>
@@ -104,5 +123,6 @@ router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, reglasPublicar,
 // "/mios" va antes de "/:id_inmueble"; si no, "mios" se leería como un id
 router.get('/mios', verificarToken, listarMios);
 router.get('/:id_inmueble', reglasDetalle, validar, detalle);
+router.patch('/:id_inmueble/estado', verificarToken, reglasEstado, validar, cambiarEstado);
 
 export default router;

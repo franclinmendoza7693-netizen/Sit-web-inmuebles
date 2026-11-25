@@ -108,6 +108,7 @@ Todas las respuestas tienen la forma `{ ok, data, mensaje }` o `{ ok: false, err
 | GET | `/api/inmuebles/mios` | Token | Inmuebles del usuario autenticado en todos los estados, los más recientes primero |
 | GET | `/api/inmuebles/:id_inmueble` | Público | Detalle de un inmueble publicado, con sus fotos y el contacto del propietario |
 | POST | `/api/inmuebles` | Token | Publica un inmueble. Se envía como `multipart/form-data`, con los datos del inmueble y hasta 5 fotos (JPG, PNG o WebP de máximo 2 MB) en el campo `fotos` |
+| PATCH | `/api/inmuebles/:id_inmueble/estado` | Dueño | Cambia el `estado` (`publicado`, `pausado` o `vendido`). Devuelve `id_inmueble` y `estado` |
 | POST | `/api/predicciones` | Token | Guarda una consulta de precio: `superficie_m2`, `num_habitaciones`, `zona`, `anio_construccion`, `precio_estimado_usd` y `version_modelo`. Devuelve `id_prediccion` |
 | GET | `/api/predicciones/mias` | Token | Consultas del usuario autenticado, las más recientes primero |
 

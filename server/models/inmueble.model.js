@@ -79,6 +79,21 @@ export async function listarPorUsuario(id_usuario) {
   return items;
 }
 
+// Devuelve el id_usuario del dueño, o null si el inmueble no existe
+export async function buscarDueno(id_inmueble) {
+  const [filas] = await pool.execute('SELECT id_usuario FROM inmuebles WHERE id_inmueble = ?', [
+    id_inmueble,
+  ]);
+  return filas[0]?.id_usuario ?? null;
+}
+
+export async function actualizarEstado(id_inmueble, estado) {
+  await pool.execute('UPDATE inmuebles SET estado = ? WHERE id_inmueble = ?', [
+    estado,
+    id_inmueble,
+  ]);
+}
+
 // Guarda el inmueble y sus fotos en una sola transacción: se guardan las dos cosas o ninguna.
 // Devuelve el id del inmueble creado. rutasFotos va en orden: la primera es la foto principal.
 export async function crear(datos, rutasFotos) {
