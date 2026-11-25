@@ -10,7 +10,7 @@ import {
 } from '../middlewares/reglas-inmueble.js';
 import { borrarFotosSiFalla, subirFotos } from '../middlewares/subida.js';
 import { validar } from '../middlewares/validar.js';
-import { crear, detalle, listar } from '../controllers/inmuebles.controller.js';
+import { crear, detalle, listar, listarMios } from '../controllers/inmuebles.controller.js';
 
 const router = Router();
 
@@ -101,6 +101,8 @@ const reglasPublicar = [
 router.get('/', reglasListado, validar, listar);
 // Orden: token → fotos → reglas. Si algo falla después de subir las fotos, se borran del disco
 router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, reglasPublicar, validar, crear);
+// "/mios" va antes de "/:id_inmueble"; si no, "mios" se leería como un id
+router.get('/mios', verificarToken, listarMios);
 router.get('/:id_inmueble', reglasDetalle, validar, detalle);
 
 export default router;

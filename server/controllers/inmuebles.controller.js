@@ -33,6 +33,12 @@ export async function crear(req, res) {
   return creado(res, inmueble, 'Inmueble publicado');
 }
 
+// GET /api/inmuebles/mios
+export async function listarMios(req, res) {
+  const items = await Inmueble.listarPorUsuario(req.usuario.id_usuario);
+  return ok(res, { items });
+}
+
 // GET /api/inmuebles/:id_inmueble
 export async function detalle(req, res) {
   const { id_inmueble } = matchedData(req, { locations: ['params'] });
