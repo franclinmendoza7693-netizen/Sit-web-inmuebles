@@ -16,6 +16,7 @@ import {
 } from '../middlewares/reglas-inmueble.js';
 import { borrarFotosSiFalla, subirFotos } from '../middlewares/subida.js';
 import { validar } from '../middlewares/validar.js';
+import { exigirValoresSimples } from '../middlewares/valores-simples.js';
 import {
   cambiarEstado,
   crear,
@@ -118,8 +119,18 @@ const reglasPublicar = [
 ];
 
 router.get('/', reglasListado, validar, listar);
-// Orden: token → fotos → reglas. Si algo falla después de subir las fotos, se borran del disco
-router.post('/', verificarToken, subirFotos, borrarFotosSiFalla, reglasPublicar, validar, crear);
+// Orden: token → fotos → reglas. Si algo falla después de subir las fotos, se borran del disco.
+// Los valores se revisan otra vez porque en multipart los campos recién existen tras multer.
+router.post(
+  '/',
+  verificarToken,
+  subirFotos,
+  borrarFotosSiFalla,
+  exigirValoresSimples,
+  reglasPublicar,
+  validar,
+  crear,
+);
 // "/mios" va antes de "/:id_inmueble"; si no, "mios" se leería como un id
 router.get('/mios', verificarToken, listarMios);
 router.get('/:id_inmueble', reglasDetalle, validar, detalle);

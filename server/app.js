@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import { ping } from './config/db.js';
 import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
+import { exigirValoresSimples } from './middlewares/valores-simples.js';
 import authRoutes from './routes/auth.routes.js';
 import datasetRoutes from './routes/dataset.routes.js';
 import inmueblesRoutes from './routes/inmuebles.routes.js';
@@ -28,6 +29,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
+app.use('/api', exigirValoresSimples);
 
 // ---------- Archivos estáticos ----------
 app.use(express.static(path.join(RAIZ, 'client')));

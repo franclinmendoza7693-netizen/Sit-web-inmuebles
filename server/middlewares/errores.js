@@ -22,6 +22,11 @@ export function manejarErrores(err, req, res, next) {
   if (MENSAJES_FOTOS[err.code]) {
     return fallo(res, 400, 'VALIDACION', 'Revisa las fotos', { fotos: MENSAJES_FOTOS[err.code] });
   }
+  // Fallos al leer la petición (JSON roto o demasiado grande, URL mal codificada, formulario mal
+  // armado): son del cliente, no del servidor
+  if (err.name === 'MulterError' || (err.status >= 400 && err.status < 500)) {
+    return fallo(res, 400, 'VALIDACION', 'La petición no es válida');
+  }
   console.error(err); // el detalle solo va al log, nunca al cliente
   return fallo(res, 500, 'ERROR_SERVIDOR', 'Ocurrió un error inesperado');
 }
