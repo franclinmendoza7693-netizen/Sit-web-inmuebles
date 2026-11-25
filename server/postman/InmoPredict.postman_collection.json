@@ -1,0 +1,649 @@
+{
+  "info": {
+    "name": "InmoPredict",
+    "description": "Los 12 endpoints de la API con casos de error. Antes de ejecutar: servidor en http://localhost:3000 y datos de prueba recién cargados (npm run seed). Ejecutar en orden con el Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "id_inmueble",
+      "value": ""
+    },
+    {
+      "key": "dni_nuevo",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Salud",
+      "item": [
+        {
+          "name": "Salud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y base de datos conectada', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.bd).to.eql('conectada');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base}}/salud"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticación",
+      "item": [
+        {
+          "name": "Registro",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DNI aleatorio para poder ejecutar la colección varias veces",
+                  "pm.collectionVariables.set('dni_nuevo', String(Math.floor(40000000 + Math.random() * 9999999)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 y sin password_hash', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json().data).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"{{dni_nuevo}}\",\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Prueba Postman\",\n  \"telefono\": \"955555555\",\n  \"password\": \"Prueba123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Registro con DNI de 7 dígitos (error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION');",
+                  "  pm.expect(pm.response.json().error.campos).to.have.property('dni');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"1234567\",\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Prueba\",\n  \"password\": \"Prueba123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login (guarda el token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y entrega token', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.token).to.be.a('string');",
+                  "});",
+                  "pm.collectionVariables.set('token', pm.response.json().data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"11111111\",\n  \"password\": \"Prueba123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login del administrador (guarda token_admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y rol admin', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.usuario.rol).to.eql('admin');",
+                  "});",
+                  "pm.collectionVariables.set('token_admin', pm.response.json().data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"00000001\",\n  \"password\": \"Admin1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Perfil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y sin password_hash', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{base}}/auth/perfil"
+          }
+        },
+        {
+          "name": "Perfil sin token (error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 NO_AUTENTICADO', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('NO_AUTENTICADO');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base}}/auth/perfil"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Inmuebles",
+      "item": [
+        {
+          "name": "Catálogo con filtros",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con items y total', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.items).to.be.an('array');",
+                  "  pm.expect(pm.response.json().data).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base}}/inmuebles?orden=precio_asc&pagina=1"
+          }
+        },
+        {
+          "name": "Publicar inmueble",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 y devuelve el inmueble', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json().data).to.have.property('id_inmueble');",
+                  "});",
+                  "pm.collectionVariables.set('id_inmueble', pm.response.json().data.id_inmueble);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{base}}/inmuebles",
+            "description": "multipart/form-data. Para adjuntar fotos, activa la fila \"fotos\" y elige hasta 5 archivos JPG, PNG o WebP de máximo 2 MB.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titulo",
+                  "value": "Casa publicada desde Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "tipo_inmueble",
+                  "value": "casa",
+                  "type": "text"
+                },
+                {
+                  "key": "zona",
+                  "value": "suburbio",
+                  "type": "text"
+                },
+                {
+                  "key": "region",
+                  "value": "La Libertad",
+                  "type": "text"
+                },
+                {
+                  "key": "provincia",
+                  "value": "Trujillo",
+                  "type": "text"
+                },
+                {
+                  "key": "distrito",
+                  "value": "Huanchaco",
+                  "type": "text"
+                },
+                {
+                  "key": "superficie_m2",
+                  "value": "150",
+                  "type": "text"
+                },
+                {
+                  "key": "num_habitaciones",
+                  "value": "4",
+                  "type": "text"
+                },
+                {
+                  "key": "anio_construccion",
+                  "value": "2010",
+                  "type": "text"
+                },
+                {
+                  "key": "precio_venta_usd",
+                  "value": "400000",
+                  "type": "text"
+                },
+                {
+                  "key": "fotos",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mis inmuebles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con items', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.items).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{base}}/inmuebles/mios"
+          }
+        },
+        {
+          "name": "Detalle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con fotos y contacto', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data).to.have.property('fotos');",
+                  "  pm.expect(pm.response.json().data).to.have.property('contacto');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base}}/inmuebles/{{id_inmueble}}"
+          }
+        },
+        {
+          "name": "Cambiar estado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y estado actualizado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.estado).to.eql('pausado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/inmuebles/{{id_inmueble}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"pausado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cambiar estado de un inmueble ajeno (error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 SIN_PERMISO', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('SIN_PERMISO');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/inmuebles/2/estado",
+            "description": "Con los datos de prueba, el inmueble 2 es de otro propietario.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"pausado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Predicciones",
+      "item": [
+        {
+          "name": "Guardar consulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con id_prediccion', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json().data).to.have.property('id_prediccion');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base}}/predicciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"superficie_m2\": 120,\n  \"num_habitaciones\": 3,\n  \"zona\": \"centro\",\n  \"anio_construccion\": 2008,\n  \"precio_estimado_usd\": 313291,\n  \"version_modelo\": \"1.0.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Mis consultas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con items', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.items).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{base}}/predicciones/mias"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Dataset",
+      "item": [
+        {
+          "name": "Dataset de entrenamiento (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con filas', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.filas).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": "{{base}}/dataset/entrenamiento"
+          }
+        },
+        {
+          "name": "Dataset como propietario (error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 SIN_PERMISO', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('SIN_PERMISO');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{base}}/dataset/entrenamiento"
+          }
+        }
+      ]
+    }
+  ]
+}
