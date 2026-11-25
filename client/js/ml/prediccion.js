@@ -1,40 +1,25 @@
-import { ENTRADAS_MODELO } from '/shared/contrato.js';
+// Inferencia en el navegador con TensorFlow.js (único punto donde el modelo ×1000 pasa a USD)
 import { MODELO_URL, NORMALIZACION_URL } from '../config.js';
-import { escalar, desescalar, fueraDeRango, vectorizar } from './preprocesamiento.js';
+import { desescalar, fueraDeRango, vectorizar } from './preprocesamiento.js';
 
 let modelo = null;
 let norm = null;
 
-/**
- * Carga el modelo de TensorFlow.js y los metadatos de normalización.
- * Se descarga una sola vez y queda en memoria.
- */
 export async function cargarModelo() {
   if (!modelo) {
-    try {
-      const [modeloCargado, normCargada] = await Promise.all([
-        tf.loadLayersModel(MODELO_URL),
-        fetch(NORMALIZACION_URL).then((r) => {
-          if (!r.ok) throw new Error(`No se pudo cargar ${NORMALIZACION_URL}`);
-          return r.json();
-        }),
-      ]);
-      modelo = modeloCargado;
-      norm = normCargada;
-      console.log('✅ Red Neuronal y normalización cargadas en memoria.');
-    } catch (err) {
-      console.error('Error al cargar el modelo de TensorFlow.js:', err);
-      throw err;
-    }
+    const [modeloCargado, normCargada] = await Promise.all([
+      tf.loadLayersModel(MODELO_URL),
+      fetch(NORMALIZACION_URL).then((r) => {
+        if (!r.ok) throw new Error(`No se pudo cargar ${NORMALIZACION_URL}`);
+        return r.json();
+      }),
+    ]);
+    modelo = modeloCargado;
+    norm = normCargada;
   }
   return { modelo, norm };
 }
 
-/**
- * Inferencia en tiempo real.
- * Recibe: { superficie_m2, num_habitaciones, zona, anio_construccion }
- * Devuelve: { precio_estimado_usd, rango_min_usd, rango_max_usd, fuera_de_rango, version_modelo }
- */
 export async function predecirPrecio(d) {
   await cargarModelo();
 
@@ -45,20 +30,14 @@ export async function predecirPrecio(d) {
     zona: String(d.zona ?? '').trim().toLowerCase(),
   };
 
-  // 1. Vectorizar la entrada respetando el orden estricto de ENTRADAS_MODELO
   const vector = vectorizar(fila, norm);
 
-  // 2. Predecir con TensorFlow.js
   const salida = tf.tidy(() => {
     const tensorInput = tf.tensor2d([vector]);
     return modelo.predict(tensorInput).dataSync()[0];
   });
 
-  // 3. Desescalar a miles de USD
-  const p = 'precio_miles_usd';
-  const miles = desescalar(salida, p, norm);
-
-  // 4. Conversión x1000 a USD completos (ÚNICO lugar del proyecto con x1000)
+  const miles = desescalar(salida, 'precio_miles_usd', norm);
   const precio = Math.round(miles * 1000);
   const margen = norm.metricas_test?.mae_usd || 16000;
 
