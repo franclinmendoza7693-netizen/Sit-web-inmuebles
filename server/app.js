@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { ping } from './config/db.js';
+import { PUERTO } from './config/puerto.js';
 import { ok } from './utils/respuesta.js';
 import { noEncontrado, manejarErrores } from './middlewares/errores.js';
 import { exigirValoresSimples } from './middlewares/valores-simples.js';
@@ -26,7 +27,8 @@ const app = express();
 // TODO: activar una Content-Security-Policy que permita cdn.jsdelivr.net
 // y probar TODAS las páginas (en especial admin/entrenamiento.html con tfjs-vis) antes de dejarla.
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+// El frontend y la API comparten puerto: ningún otro origen necesita llamar a la API
+app.use(cors({ origin: `http://localhost:${PUERTO}` }));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use('/api', exigirValoresSimples);
